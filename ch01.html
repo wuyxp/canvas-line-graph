@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script>
+
+    <link rel="stylesheet" href="style/css.css">
+
+
+</head>
+<body>
+<h1>测试canvas1622</h1>
+<!-- 测试用图片-->
+<div id="canvas"></div>
+
+<script src="js/tween.js"></script>
+<script src="js/common.js"></script>
+<script src="js/config.js"></script>
+<script src="js/hoverDataMap.js"></script>
+<script src="js/createTable.js"></script>
+<script src="js/createMap.js"></script>
+<script src="js/createDataMap.js"></script>
+<script>
+
+
+    var oC = new createTable(800*MULTIPLE,800*MULTIPLE);
+
+    var oFragmentCanvas = oC.getTable();
+    oDiv.appendChild(oFragmentCanvas);
+
+    var oCanvas = oC.getCanvas().getContext("2d");
+
+    //创建坐标轴
+    new createMap(data,oCanvas);
+
+
+    //创建画布完毕
+
+
+    var oCM = new createDataMap(oCanvas,TABLE_LEFT*MULTIPLE,(TABLE_TOP-TABLE_HEIGHT)*MULTIPLE,TABLE_WIDTH*MULTIPLE,TABLE_HEIGHT*MULTIPLE);
+
+    oCM.drawDataMap("#beecfd",res);
+
+
+
+
+</script>
+</body>
+</html>
