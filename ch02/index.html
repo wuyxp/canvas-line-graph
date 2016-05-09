@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        #canvas{
+            width:800px;
+            height:800px;
+            margin: 0px auto;
+            position: relative;
+        }
+        #canvas canvas{
+            width: 100%;
+            height: 100%;;
+        }
+        canvas{
+            border : 1px solid;
+
+        }
+
+
+
+        /*
+            弹出气泡公共样式
+        */
+        .table-tip{
+            width:500px;
+            height:100px;
+            position: absolute;
+            top:0;
+            left:0;
+            transform: translate(0,0);
+        }
+        .table-tip .table-tip-corner{
+            width:20px;
+            height:20px;
+            transform: scale(0.6,1) rotate(45deg);
+            background: #beecfd;
+            border:0px solid;
+            box-shadow: 0px 1px 0px rgba(1,1,1,0.1);
+            position: absolute;
+            left:0px;
+            top:50%;
+            margin-top: -10px;
+            z-index: 3;
+        }
+        .table-tip .table-tip-point{
+            width:5px;
+            height:5px;
+            background: #7fd9fb;
+            border:2px solid #fff;
+            position: absolute;
+            border-radius: 5px;
+            top:0px;
+            z-index: 4;
+            left:10px;
+            top:50%;
+            margin-top: -3px;
+        }
+        .table-tip .table-tip-connt{
+            width:auto;
+            height:100%;
+            position: absolute;
+            left:10px;
+            background: #beecfd;
+            border:0px solid;
+            box-shadow: 1px 1px 5px rgba(1,1,1,0.2);
+            border-radius: 10px;
+            z-index: 2;
+            padding-right: 10px;
+        }
+
+        .table-tip .table-tip-connt .table-tip-connt-s{
+            font-size: 12px;
+            width: 100%;
+            display: block;
+            text-indent: 1em;
+            margin-top: 1.3em;
+        }
+        .table-tip .table-tip-connt-s-h{
+            color:#f13b3b
+        }
+
+        /*气泡样式一*/
+        .table-tip-style1 .table-tip-corner{
+            background: #beecfd !important;
+        }
+        .table-tip-style1 .table-tip-connt{
+            background: #beecfd !important;
+        }
+        .table-tip-style1 .table-tip-point{
+            background: #7fd9fb !important;
+        }
+
+        /*气泡样式2*/
+        .table-tip-style2 .table-tip-corner{
+            background: #fdf0da !important;
+        }
+        .table-tip-style2 .table-tip-connt{
+            background: #fdf0da !important;
+        }
+        .table-tip-style2 .table-tip-point{
+            background: #f13b3b !important;
+        }
+    </style>
+</head>
+<body>
+<h1>测试canvas</h1>
+<!--
+<canvas width="800" height="400"></canvas>
+-->
+<!--
+测试table的tip框
+<div class="table-tip table-tip-style1">
+    <div class="table-tip-corner"></div>
+    <div class="table-tip-point"></div>
+    <div class="table-tip-connt">
+        <span class="table-tip-connt-s">12-08-11:03</span>
+        <span class="table-tip-connt-s">正常流量:100000000Mbps</span>
+        <span class="table-tip-connt-s table-tip-connt-s-h">异常流量:10Mbps</span>
+    </div>
+</div>
+
+<div class="table-tip table-tip-style2">
+    <div class="table-tip-corner"></div>
+    <div class="table-tip-point"></div>
+    <div class="table-tip-connt">
+        <span class="table-tip-connt-s">12-08-11:03</span>
+        <span class="table-tip-connt-s">正常流量:100000000Mbps</span>
+        <span class="table-tip-connt-s table-tip-connt-s-h">异常流量:10Mbps</span>
+    </div>
+</div>
+-->
+<div id="canvas"></div>
+<script>
+    var oDiv = document.querySelector("#canvas");
+
+
+
+    //创建个div用于鼠标跟随
+    //setting配置项 {
+    //  style : "table-tip-style1",
+    //  data : ["12-08-11:03","正常流量:100000000Mbps","异常流量:10Mbps"]
+    // }
+    var oTableTip =  (function (){
+        var str = '<div class="table-tip-corner"></div>\
+            <div class="table-tip-point"></div>\
+            <div class="table-tip-connt">\
+                <span class="table-tip-connt-s"></span>\
+                <span class="table-tip-connt-s"></span>\
+                <span class="table-tip-connt-s table-tip-connt-s-h"></span>\
+            </div>';
+        var oDiv;
+        var oD = document.createElement("div");
+        oD.className = "";
+        oD.innerHTML = str;
+        return function(){
+
+            return {
+                getDiv : function(){
+                    return oDiv || (oDiv=oD);
+                },
+                setDiv : function(setting){
+                    oDiv || (oDiv=oD);
+                    oDiv.className = "table-tip " + setting.style;
+                    var aSpan = oDiv.querySelectorAll(".table-tip-connt-s");
+                    aSpan[0].innerHTML = setting.data[0];
+                    aSpan[1].innerHTML = setting.data[1];
+                    aSpan[2].innerHTML = setting.data[2];
+                    return oDiv;
+                }
+            }
+        }
+
+    })();
+
+
+
+    //兼容retina屏的canvas方案
+    //将倍数先乘后除
+
+    var MULTIPLE = 2;
+
+    var CANVAS_TOP = oDiv.offsetTop;
+    var CANVAS_LEFT = oDiv.offsetLeft;
+
+    var TABLE_TOP = 470;
+    var TABLE_LEFT = 60;
+    var TABLE_WIDTH = 670;
+    var TABLE_HEIGHT = 260;
+
+
+    /*
+     创建画布
+     */
+    function createTable(w,h){
+        this.w = w;
+        this.h = h;
+        this.c = null;
+        this.f = this.f || this.create();
+
+    };
+    createTable.prototype.create = function(){
+        var f = document.createDocumentFragment();
+        this.c = document.createElement("canvas");
+
+        this.c.width = this.w;
+        this.c.height = this.h;
+
+        f.appendChild(this.c);
+        return f;
+    };
+    createTable.prototype.getTable = function(){
+        return this.f;
+    };
+    createTable.prototype.getCanvas = function(){
+        return this.c;
+    };
+
+    var oC = new createTable(800*MULTIPLE,800*MULTIPLE);
+
+    var oFragmentCanvas = oC.getTable();
+    var oCanvas = oC.getCanvas().getContext("2d");
+
+
+
+    /*
+     创建坐标轴
+     参数: obj{
+     o   :   {
+     x : 60,
+     y : 270
+     },
+     x   :   {
+     len  : 260,
+     text : "流量Mbps",
+     data : ["0","10","20","30"],
+     scale: false,
+     line : ture
+     },
+     y   :   {
+     len  : 670,
+     text : "时间",
+     data : ["6:00","7:00","8:00","9:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00"],
+     scale: ture,
+     line : false
+     }
+     }
+     */
+
+    var data = {
+        o   :   {
+            x : TABLE_LEFT*MULTIPLE,
+            y : TABLE_TOP*MULTIPLE
+        },
+        x   :   {
+            len  : TABLE_WIDTH*MULTIPLE,
+            text : "流量Mbps",
+            data : ["0","0.2","0.4","0.6","0.8","1"],
+            scale: true,
+            line : true
+        },
+        y   :   {
+            len  : TABLE_HEIGHT*MULTIPLE,
+            text : "时间",
+            data : ["6:00","7:00","8:00","9:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00"],
+            scale: true,
+            line : false
+        }
+    };
+
+    function createMap(json,gd){
+        this.ox = json.o.x;
+        this.oy = json.o.y;
+        this.x = json.x;
+        this.y = json.y;
+
+        this.endx = this.ox+this.x.len;
+        this.endy = this.oy-this.y.len;
+
+        this.init(gd);
+
+
+        //启动表格的鼠标移动事件
+        this.mousemove(gd);
+    };
+
+    //初始化坐标轴的各个细节
+    createMap.prototype.init = function(gd){
+
+        //横竖坐标轴
+        this.drawLine(gd,this.ox,this.oy,this.ox,this.endy,"#cfcfcf");
+        this.drawLine(gd,this.ox,this.oy,this.endx,this.oy,"#cfcfcf");
+
+        //坐标两边端点文字
+        this.drawExplain(gd,this.ox-10,this.endy,this.x.text.substring(0,2));
+        this.drawExplain(gd,this.ox-10,this.endy+40,this.x.text.substring(2));
+
+        this.drawExplain(gd,this.endx,this.oy+10,this.y.text);
+
+        //坐标刻度文字
+        if(this.y.scale){
+            this.drawScale(gd,this.ox,this.oy,this.endx,this.oy,this.y.data);
+        }
+        if(this.x.scale){
+            this.drawScale(gd,this.ox,this.oy,this.ox,this.endy,this.x.data);
+        }
+
+
+
+        //坐标刻度线
+        if(this.y.line){
+            this.drawScaleLine(gd,this.ox,this.oy,this.endx,this.endy,"#f3f3f5",this.y.data,"vertical");
+        }
+        if(this.x.line){
+            this.drawScaleLine(gd,this.ox,this.oy,this.endx,this.endy,"#f3f3f5",this.x.data,"horizontal");
+        }
+    }
+
+    //画横竖坐标轴
+    createMap.prototype.drawLine = function(gd,x0,y0,x1,y1,color){
+        gd.save();
+        gd.translate(0.5,0.5);
+        gd.lineWidth = 2;
+        gd.strokeStyle = color;
+        gd.beginPath();
+        gd.moveTo(x0,y0);
+        gd.lineTo(x1,y1);
+        gd.stroke();
+        gd.closePath();
+        gd.restore();
+    };
+
+    //画坐标轴的两个端点
+    createMap.prototype.drawExplain = function(gd,x0,y0,text){
+
+
+        gd.save()
+        gd.beginPath();
+
+        gd.fillStyle='#3c3c3c';
+        gd.font='26px a';
+        gd.textAlign='right';
+        gd.textBaseline='top';
+        gd.translate(0.5,0.5);
+        gd.fillText(text,x0,y0);
+
+        gd.stroke();
+        gd.restore();
+
+    };
+
+
+    //画刻度
+    createMap.prototype.drawScale = function(gd,x0,y0,x1,y1,data){
+
+        var direction = x0 == x1 ? "vertical" : "horizontal" //方向
+        var l = data.length;
+        var s = (y1-y0)/l || (x1-x0)/l;
+
+        gd.save()
+        gd.beginPath();
+        gd.fillStyle='#3c3c3c';
+        gd.font='26px a';
+        gd.textAlign='right';
+        gd.textBaseline='top';
+        gd.translate(0.5,0.5);
+
+
+        for(var i=0;i<l;i++){
+            if(direction == "vertical"){
+                gd.fillText(data[i],x0-10,y0+s*i-20);
+            }else{
+                gd.fillText(data[i],x0+s*i+20,y0+10);
+            }
+
+        }
+
+        gd.stroke();
+        gd.restore();
+
+    };
+
+    //画刻度线
+    createMap.prototype.drawScaleLine = function(gd,x0,y0,x1,y1,color,data,d){
+        var direction = d; //方向
+        var l = data.length;
+
+
+        gd.save();
+        gd.lineWidth = 2;
+        gd.strokeStyle = color;
+        gd.translate(0.5,0.5);
+
+        for(var i=0;i<l;i++){
+            gd.beginPath();
+            if(direction == "vertical"){
+                var s = (x1-x0)/l;
+                var sx = x0+(i*s);
+                gd.moveTo(sx,y0);
+                gd.lineTo(sx,y1);
+
+            }else{
+                var s = (y1-y0)/l;
+                var sy = y0+(i*s);
+                gd.moveTo(x0,sy);
+                gd.lineTo(x1,sy);
+            }
+            gd.stroke();
+            gd.closePath();
+
+        }
+
+        gd.restore();
+    };
+
+    //将选中的点加粗
+    createMap.prototype.hoverPoint = function(gd,x,y,color){
+        gd.save();
+        gd.beginPath();
+        gd.fillStyle=color;
+        //gd.moveTo(x,y);
+        //gd.lineTo(x+1,y+1);
+        gd.arc(x,y,5,0,2*Math.PI);
+        gd.fill();
+        gd.restore();
+    };
+
+    //将画布清除
+    createMap.prototype.clearMap = function(gd){
+        gd.clearRect(0,0,gd.canvas.width,gd.canvas.height);
+    };
+
+    //将画布生成base64
+    createMap.prototype.getImageBackground = function(gd){
+        var i = new Image();
+        i.src = gd.canvas.toDataURL("image/png");
+        return i;
+    };
+    //将画布预制的base64作为背景贴到canvas上
+    createMap.prototype.setImageBackground = function(gd,image){
+
+        gd.drawImage(image, 0, 0);
+
+    };
+
+
+    //根据鼠标位置绘制各种数据
+    createMap.prototype.drawDataPoint = function(gd,tx,ty,oImagebase,oTableTipDiv){
+        this.clearMap(gd);
+        this.setImageBackground(gd,oImagebase);
+        oTableTipDiv.style.display= "block";
+        //暂时将datamap下的第一个数据作为默认数据
+        //处理鼠标移入到canvan上吧鼠标移入的距离乘以像素缩小的倍数
+        var d1 = gd.DataMap[0];
+        var d1Index = tx*MULTIPLE;
+
+        //如果鼠标没有到下一个节点,那么就用上一个节点的数值
+
+        while(d1Index>0 && !d1.d[d1Index]){
+            d1Index--;
+        }
+        d1_d = d1.d[d1Index];
+
+        var oTableTipData = {
+            style : "table-tip-style1",
+            data : [d1.display_name+"-"+d1_d.v,"正常流量:"+d1_d.v+"Mbps","异常流量:0Mbps"]
+        };
+        this.hoverPoint(gd,d1_d.x,d1_d.y,"#beecfd");
+
+
+        oTableTipDiv = oTableTip().setDiv(oTableTipData);
+
+        oTableTipDiv.style.transform = 'translate(' + (tx+20) + 'px,' + (ty-50) + 'px)';
+    }
+
+    //鼠标划入表格的hover事件
+    createMap.prototype.mousemove = function(gd){
+        var oTableTipDiv = oTableTip().getDiv();
+        oDiv.appendChild(oTableTipDiv);
+        var _this = this;
+        var oImagebase = null;
+        var timer = null;
+        gd.canvas.onmousemove = function(e){
+            //根据假数据生成tip提示框
+
+
+            var tx = e.pageX-oDiv.offsetLeft;
+            var ty = e.pageY-oDiv.offsetTop;
+
+            if(ty>TABLE_TOP || ty<(TABLE_TOP-TABLE_HEIGHT) || tx<TABLE_LEFT || tx> (TABLE_WIDTH+TABLE_LEFT)){
+                //如果鼠标在那个表格之外,那么返回false隐藏tip
+                oTableTipDiv.style.display= "none";
+                return false;
+            }else{
+
+                _this.drawDataPoint(gd,tx,ty,oImagebase,oTableTipDiv);
+            }
+
+        };
+        gd.canvas.onmouseover = function(){
+            //timer = setTimeout(function(){
+            oImagebase = _this.getImageBackground(gd);
+            // },500);
+        };
+        gd.canvas.onmouseout = function(){
+            oTableTipDiv.style.display = "none";
+        }
+
+    }
+
+
+    new createMap(data,oCanvas);
+    oDiv.appendChild(oFragmentCanvas);
+
+
+
+
+
+
+
+
+
+
+
+    //创建画布完毕
+
+    //返回数据
+
+    var res = {"ret_code":0,"total_count":1,"ret_set":[{"instance_name":"123","display_name":"流量使用率","timestamp":1462446000,"instance_id":"i-8t3wysvi","monitor_info":{"default":{"resource_name":"default","data":[0.1,0.1,0.2,0.2,0.1,0.1,0.2,0.1,0.2,0.1,0.2,0.2,0.2,0.3,0.2,0.2,0.2,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.5,0.5,0.5,0.5,0.6,0.6,0.8,0.7,0.7,0.6,1.1,0.8,0.9,0.8,1.9,0.7,0.7,0.7,0.8,0.7,0.6,0.6,0.6,0.9,0.6,0.6,0.6,0.6,0.6,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.4,0.4,0.5,0.6,0.8,0.4,0.4,0.3,0.3,0.3,0.3,0.3,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2]}},"unit":"%"}],"action":"MultiMonitors","ret_msg":"服务器响应成功","msg":"Success"}
+
+    //console.log(resdata);
+
+    //数据折线构造函数
+    function createDataMap(gd,ox,oy,w,h){
+        this.ox = ox;
+        this.oy = oy;
+        this.w = w;
+        this.h = h;
+        this.gd = gd;
+        this.gd.DataMap = [];
+    }
+
+    createDataMap.prototype.drawDataMap = function(color,res){
+        var dataMap = {};
+
+        var resdata = res.ret_set[0].monitor_info.default.data;
+        var l = resdata.length;
+        var m = Math.max.apply(null,resdata);
+
+        dataMap.instance_id = res.ret_set[0].instance_id;
+        dataMap.display_name = res.ret_set[0].display_name;
+        dataMap.timestamp = res.ret_set[0].timestamp;
+        dataMap.d = {};
+
+        this.gd.save();
+        this.gd.beginPath();
+        this.gd.translate(0.5,0.5);
+        this.gd.lineWidth = 3;
+        this.gd.strokeStyle = color;
+
+
+        for(var i=0;i<l;i++){
+            var y = ((m-resdata[i])/m)*this.h+this.oy;
+            var x = i/l*this.w+this.ox;
+            dataMap.d[parseInt(x)] = {};
+            dataMap.d[parseInt(x)].v = resdata[i];
+            dataMap.d[parseInt(x)].x = x;
+            dataMap.d[parseInt(x)].y = y;
+            if(i == 0){
+                this.gd.moveTo(x,y);
+            }
+            else{
+                this.gd.lineTo(x,y);
+            }
+
+        }
+
+
+        this.gd.stroke();
+        this.gd.restore();
+
+        this.gd.DataMap.push(dataMap);
+    }
+
+
+    //加入一条数据
+    var oCM = new createDataMap(oCanvas,TABLE_LEFT*MULTIPLE,(TABLE_TOP-TABLE_HEIGHT)*MULTIPLE,TABLE_WIDTH*MULTIPLE,TABLE_HEIGHT*MULTIPLE);
+
+    oCM.drawDataMap("#beecfd",res);
+
+
+</script>
+</body>
+</html>

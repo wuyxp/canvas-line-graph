@@ -21,7 +21,7 @@ createDataMap.prototype.drawDataMap = function(color,res,animation){
     var m = Math.max.apply(null,resdata);
 
     if(animation){
-        //this.animation(color,function () {});
+        this.animation(color,function () {});
     }
 
     dataMap.instance_id = res.ret_set[0].instance_id;
@@ -43,12 +43,7 @@ createDataMap.prototype.drawDataMap = function(color,res,animation){
         dataMap.d[parseInt(x)].v = resdata[i];
         dataMap.d[parseInt(x)].x = x;
         dataMap.d[parseInt(x)].y = y;
-        if(i == 0){
-            this.gd.moveTo(x,y);
-        }
-        else{
-            this.gd.lineTo(x,y);
-        }
+        this.gd.lineTo(x,y);
 
     }
 
