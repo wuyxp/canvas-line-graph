@@ -14,6 +14,8 @@ function createDataMap(gd,cm,ox,oy,w,h){
     this.cm = cm; // 坐标轴对象作为参数传入hoverDataMap对象中
     this.imagebg; // 预留一张没有数据的图片作为背景
 
+    this.max; //数据集体里最大的数
+
     this._cacheData=[];//将drawDataMap的值放到缓存里,回头集体画出来.
 
 
@@ -33,19 +35,12 @@ createDataMap.prototype.drawDataMap = function(color,res){
     dataMap.instance_id = res.ret_set[0].instance_id;
     dataMap.display_name = res.ret_set[0].display_name;
     dataMap.timestamp = res.ret_set[0].timestamp;
-    dataMap.d = {};
+
     dataMap.color = color;
 
     dataMap.resdata = resdata;
 
-    for(var i=0;i<l;i++){
-        var y = ((m-resdata[i])/m)*this.h+this.oy;
-        var x = i/l*this.w+this.ox;
-        dataMap.d[parseInt(x)] = {};
-        dataMap.d[parseInt(x)].v = resdata[i];
-        dataMap.d[parseInt(x)].x = x;
-        dataMap.d[parseInt(x)].y = y;
-    }
+
     this.gd.DataMap.push(dataMap); //将所有data数据添加道dataMap对象上
 
     this.imagebg = this.cm.getImageBackground(this.gd);
@@ -69,6 +64,9 @@ createDataMap.prototype.starDraw = function(animation){
 
     var animation = animation; //是否动画启动数据
     var aData = this.getCacheData();
+
+    this.max = this.setScale(aData);
+
     if(animation){
         this.animation(aData,function () {
             this.oHover.init();
@@ -79,10 +77,34 @@ createDataMap.prototype.starDraw = function(animation){
             this.oHover.init();
         });
     }
+};
+
+//设置所有的数据比例,并且返回最大值
+createDataMap.prototype.setScale = function(adata){
+    //需要找一下aData里面数据的最大值
+    var max = 0,m;
+    for(var i=0;i<adata.length;i++){
+        max = max > (m = Math.max.apply(null,adata[i].resdata)) ? max : m;
+    }
+
+    for(var i=0;i<adata.length;i++){
+        adata[i]["d"] = {};
+        for(var j=0,l=adata[i].resdata.length;j<l;j++){
+            var y = ((max-adata[i].resdata[j])/max)*this.h+this.oy;
+            var x = j/l*this.w+this.ox;
+            adata[i]["d"][parseInt(x)] = {};
+            adata[i]["d"][parseInt(x)].v = adata[i].resdata[j];
+            adata[i]["d"][parseInt(x)].x = x;
+            adata[i]["d"][parseInt(x)].y = y;
+        }
+
+    }
+    return max;
 }
 
 //直接画
 createDataMap.prototype.drawLine = function(adata,cbfun){
+
 
     for(var d=0,dl=adata.length;d<dl;d++){
         this.gd.save();
@@ -93,7 +115,7 @@ createDataMap.prototype.drawLine = function(adata,cbfun){
         var resdata = adata[d].resdata;;
         var lint_s = 0;
         var l = resdata.length;
-        var m = Math.max.apply(null,resdata);
+        var m = this.max;
         this.gd.strokeStyle = adata[d].color;
         for(var i=0;i<l;i++){
             if(resdata[i] === null) {
@@ -178,7 +200,7 @@ createDataMap.prototype.animation = function(adata,cbfun){
                 var lint_s = 0;
                 for(var j=0,a_j=resdata.length;j<a_j;j++){
 
-                    var m = Math.max.apply(null,resdata);
+                    var m = _this.max;
                     if(resdata[j] === null) {
                         lint_s = 0;
                     }else {

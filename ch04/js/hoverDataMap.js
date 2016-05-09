@@ -110,12 +110,14 @@ hoverDataMap.prototype.drawDataPoint = function(gd,tx,ty,oImagebase){
     _m.setImageBackground(gd,oImagebase);
     //暂时将datamap下的第一个数据作为默认数据
     //处理鼠标移入到canvan上吧鼠标移入的距离乘以像素缩小的倍数
+    var d1Index = tx*MULTIPLE;
+
 
     //DataMap从目前来看,这个数据最多会有两条,所以不做循环,单纯的用查找的方式写
     var d1 = gd.DataMap[0];
-    var d2 = gd.DataMap[1];
+    var d2 = gd.DataMap[1] || "";
 
-    var d1Index = tx*MULTIPLE;
+
 
     //如果鼠标没有到下一个节点,那么就用上一个节点的数值
 
@@ -123,11 +125,11 @@ hoverDataMap.prototype.drawDataPoint = function(gd,tx,ty,oImagebase){
         d1Index--;
     }
     var d1_d = d1.d[d1Index];
-    var d2_d = d2.d[d1Index];
+    var d2_d = d2 && d2.d[d1Index];
 
     var oTableTipData = {
-        style : _m.style,
-        data : [_m.title,_m["data"]+d1_d.v+"Mbps",_m["data"]+(d2_d.v||0)+"Mbps"]
+        style : _m.tip.style,
+        data : [_m.tip.title,_m["tip"]["data"][0]+d1_d.v+"Mbps",_m["tip"]["data"][1]+(d2_d.v||0)+"Mbps"]
     };
     this.hoverPoint(gd,d1_d.x,d1_d.y,d1.color);
     if(d2_d.v !== null){
