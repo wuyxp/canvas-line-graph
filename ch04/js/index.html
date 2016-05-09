@@ -1,0 +1,327 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        div{
+            width:800px;
+            height:800px;
+            margin: 0px auto;
+        }
+        div canvas{
+            width: 100%;
+            height: 100%;;
+        }
+        canvas{
+            border : 1px solid;
+
+        }
+    </style>
+</head>
+<body>
+<h1>测试canvas</h1>
+<!--
+<canvas width="800" height="400"></canvas>
+-->
+<div id="canvas"></div>
+<script>
+    var oDiv = document.querySelector("#canvas");
+
+
+    //兼容retina屏的canvas方案
+    //将倍数先乘后除
+
+    var MULTIPLE = 2;
+
+
+    /*
+     创建画布
+     */
+    function createTable(w,h){
+        this.w = w;
+        this.h = h;
+        this.c = null;
+        this.f = this.f || this.create();
+
+    };
+    createTable.prototype.create = function(){
+        var f = document.createDocumentFragment();
+        this.c = document.createElement("canvas");
+
+        this.c.width = this.w;
+        this.c.height = this.h;
+
+        f.appendChild(this.c);
+        return f;
+    };
+    createTable.prototype.getTable = function(){
+        return this.f;
+    };
+    createTable.prototype.getCanvas = function(){
+        return this.c;
+    };
+
+    var oC = new createTable(800*MULTIPLE,800*MULTIPLE);
+
+    var oFragmentCanvas = oC.getTable();
+    var oCanvas = oC.getCanvas().getContext("2d");
+
+    console.log(oCanvas);
+
+
+    /*
+     创建坐标轴
+     参数: obj{
+     o   :   {
+     x : 60,
+     y : 270
+     },
+     x   :   {
+     len  : 260,
+     text : "流量Mbps",
+     data : ["0","10","20","30"],
+     scale: false,
+     line : ture
+     },
+     y   :   {
+     len  : 670,
+     text : "时间",
+     data : ["6:00","7:00","8:00","9:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00"],
+     scale: ture,
+     line : false
+     }
+     }
+     */
+
+    var data = {
+        o   :   {
+            x : 60*MULTIPLE,
+            y : 470*MULTIPLE
+        },
+        x   :   {
+            len  : 670*MULTIPLE,
+            text : "流量Mbps",
+            data : ["0","10","20","30"],
+            scale: false,
+            line : true
+        },
+        y   :   {
+            len  : 260*MULTIPLE,
+            text : "时间",
+            data : ["6:00","7:00","8:00","9:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00"],
+            scale: true,
+            line : false
+        }
+    };
+
+    function createMap(json,gd){
+        this.ox = json.o.x;
+        this.oy = json.o.y;
+        this.x = json.x;
+        this.y = json.y;
+
+        this.endx = this.ox+this.x.len;
+        this.endy = this.oy-this.y.len;
+
+        this.init(gd);
+    };
+
+    //初始化坐标轴的各个细节
+    createMap.prototype.init = function(gd){
+
+        //横竖坐标轴
+        this.drawLine(gd,this.ox,this.oy,this.ox,this.endy,"#cfcfcf");
+        this.drawLine(gd,this.ox,this.oy,this.endx,this.oy,"#cfcfcf");
+
+        //坐标两边端点文字
+        this.drawExplain(gd,this.ox-10,this.endy,this.x.text.substring(0,2));
+        this.drawExplain(gd,this.ox-10,this.endy+40,this.x.text.substring(2));
+
+        this.drawExplain(gd,this.endx,this.oy+10,this.y.text);
+
+        //坐标刻度文字
+        if(this.y.scale){
+            this.drawScale(gd,this.ox,this.oy,this.endx,this.oy,this.y.data);
+        }
+        if(this.x.scale){
+            this.drawScale(gd,this.ox,this.oy,this.ox,this.endy,this.x.data);
+        }
+
+
+
+        //坐标刻度线
+        if(this.y.line){
+            this.drawScaleLine(gd,this.ox,this.oy,this.endx,this.endy,"#f3f3f5",this.y.data,"vertical");
+        }
+        if(this.x.line){
+            this.drawScaleLine(gd,this.ox,this.oy,this.endx,this.endy,"#f3f3f5",this.x.data,"horizontal");
+        }
+    }
+
+    //画横竖坐标轴
+    createMap.prototype.drawLine = function(gd,x0,y0,x1,y1,color){
+        gd.save();
+        gd.translate(0.5,0.5);
+        gd.lineWidth = 2;
+        gd.strokeStyle = color;
+        gd.beginPath();
+        gd.moveTo(x0,y0);
+        gd.lineTo(x1,y1);
+        gd.stroke();
+        gd.closePath();
+        gd.restore();
+    };
+
+    //画坐标轴的两个端点
+    createMap.prototype.drawExplain = function(gd,x0,y0,text){
+
+
+        gd.save()
+        gd.beginPath();
+
+        gd.fillStyle='#3c3c3c';
+        gd.font='26px a';
+        gd.textAlign='right';
+        gd.textBaseline='top';
+        gd.translate(0.5,0.5);
+        gd.fillText(text,x0,y0);
+
+        gd.stroke();
+        gd.restore();
+
+    };
+
+
+    //画刻度
+    createMap.prototype.drawScale = function(gd,x0,y0,x1,y1,data){
+
+        var direction = x0 == x1 ? "vertical" : "horizontal" //方向
+        var l = data.length;
+        var s = (y1-y0)/l || (x1-x0)/l;
+
+        gd.save()
+        gd.beginPath();
+        gd.fillStyle='#3c3c3c';
+        gd.font='26px a';
+        gd.textAlign='right';
+        gd.textBaseline='top';
+        gd.translate(0.5,0.5);
+
+
+        for(var i=0;i<l;i++){
+            if(direction == "vertical"){
+                gd.fillText(data[i],x0-10,y0+s*i-20);
+            }else{
+                gd.fillText(data[i],x0+s*i+20,y0+10);
+            }
+
+        }
+
+        gd.stroke();
+        gd.restore();
+
+    };
+
+    //画刻度线
+    createMap.prototype.drawScaleLine = function(gd,x0,y0,x1,y1,color,data,d){
+        var direction = d; //方向
+        var l = data.length;
+
+
+        gd.save();
+        gd.lineWidth = 2;
+        gd.strokeStyle = color;
+        gd.translate(0.5,0.5);
+
+        for(var i=0;i<l;i++){
+            gd.beginPath();
+            if(direction == "vertical"){
+                var s = (x1-x0)/l;
+                var sx = x0+(i*s);
+                gd.moveTo(sx,y0);
+                gd.lineTo(sx,y1);
+
+            }else{
+                var s = (y1-y0)/l;
+                var sy = y0+(i*s);
+                gd.moveTo(x0,sy);
+                gd.lineTo(x1,sy);
+            }
+            gd.stroke();
+            gd.closePath();
+
+        }
+
+        gd.restore();
+    }
+
+
+
+    new createMap(data,oCanvas);
+    oDiv.appendChild(oFragmentCanvas);
+
+
+
+
+
+
+
+
+
+
+
+    //创建画布完毕
+
+    //返回数据
+
+    var res = {"ret_code":0,"total_count":1,"ret_set":[{"instance_name":"123","display_name":"CPU使用率","timestamp":1462446000,"instance_id":"i-8t3wysvi","monitor_info":{"default":{"resource_name":"default","data":[0.1,0.1,0.2,0.2,0.1,0.1,0.2,0.1,0.2,0.1,0.2,0.2,0.2,0.3,0.2,0.2,0.2,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.5,0.5,0.5,0.5,0.6,0.6,0.8,0.7,0.7,0.6,1.1,0.8,0.9,0.8,1.9,0.7,0.7,0.7,0.8,0.7,0.6,0.6,0.6,0.9,0.6,0.6,0.6,0.6,0.6,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.4,0.4,0.5,0.6,0.8,0.4,0.4,0.3,0.3,0.3,0.3,0.3,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2]}},"unit":"%"}],"action":"MultiMonitors","ret_msg":"服务器响应成功","msg":"Success"}
+
+    var resdata = res.ret_set[0].monitor_info.default.data;
+    //console.log(resdata);
+
+    //数据折线构造函数
+    function createDataMap(gd,ox,oy,w,h,color,data){
+        this.ox = ox;
+        this.oy = oy;
+        this.w = w;
+        this.h = h;
+        this.color = color;
+
+        this.drawDataMap(gd,data);
+    }
+
+    createDataMap.prototype.drawDataMap = function(gd,data){
+        var l = data.length;
+        var m = Math.max.apply(null,data);
+        gd.save();
+        gd.beginPath();
+        gd.translate(0.5,0.5);
+        gd.lineWidth = 2;
+        gd.strokeStyle = this.color;
+
+
+        for(var i=0;i<l;i++){
+            var y = (m-data[i])/m*this.h+this.oy;
+            var x = i/l*this.w+this.ox;
+            if(i == 0){
+                gd.moveTo(x,y);
+            }
+            else{
+                gd.lineTo(x,y);
+            }
+
+        }
+
+        gd.stroke();
+        gd.restore();
+    }
+
+
+    //加入一条数据
+    new createDataMap(oCanvas,70*MULTIPLE,210*MULTIPLE,660*MULTIPLE,260*MULTIPLE,"#beecfd",resdata);
+
+
+
+</script>
+</body>
+</html>
