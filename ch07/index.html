@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <link rel="stylesheet" href="style/css.css">
+
+    <script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script>
+</head>
+<body>
+<h1>展示12个canvas</h1>
+<div class="canvas" id="canvas1"></div>
+<div class="canvas" id="canvas2"></div>
+<div class="canvas" id="canvas3"></div>
+<div class="canvas" id="canvas4"></div>
+<div class="canvas" id="canvas5"></div>
+<div class="canvas" id="canvas6"></div>
+<div class="canvas" id="canvas7"></div>
+<div class="canvas" id="canvas8"></div>
+<div class="canvas" id="canvas9"></div>
+<div class="canvas" id="canvas10"></div>
+<div class="canvas" id="canvas11"></div>
+<div class="canvas" id="canvas12"></div>
+
+<div id="mask"></div>
+<div id="cv">
+    <a href="javascript:;" id="close">X</a>
+    <div id="canvas"></div>
+    <img src="" alt="" id="img1">
+    <img src="" alt="" id="img2">
+</div>
+
+
+<script src="config.js"></script>
+<script src="js/tween.js"></script>
+<script src="js/common.js"></script>
+<script src="js/hoverDataMap.js"></script>
+<script src="js/createTable.js"></script>
+<script src="js/createMap.js"></script>
+<script src="js/createDataMap.js"></script>
+
+
+<script src="js/init.js"></script>
+<script>
+
+    var aC = $(".canvas");
+    var thisIndex = 0;
+    for(var i=0,j=aC.length;i<j;i++){
+        new yunChar(aC[i],_c[i]);
+
+        (function(i){
+            aC[i].onclick = function(){
+                thisIndex = i;
+                $("#mask")[0].style.display = "block";
+                $("#cv")[0].style.display = "block";
+
+                var d = _c[i];
+                d.animation = true;
+                d.tip.show = true;
+                d.axes.ox = 50;
+                d.axes.oy = 400;
+                d.axes.x.len = 700;
+                d.axes.y.len = 350;
+
+                var yc = new yunChar($("#canvas")[0],d);
+                var src = yc.getDataImage();
+                $("#img1")[0].src = src[0].src;
+                $("#img1")[0].title = src[0].title;
+                $("#img2")[0].src = src[1].src;
+                $("#img2")[0].title = src[1].title;
+
+
+            }
+        })(i)
+    }
+
+
+    $("#close")[0].onclick = function(){
+        _c[thisIndex].tip.show = false;
+        $("#mask")[0].style.display = "none";
+        $("#cv")[0].style.display = "none";
+        $("#canvas")[0].innerHTML = "";
+    }
+
+    function $(str){
+        return document.querySelectorAll(str);
+    }
+
+
+</script>
+</body>
+</html>

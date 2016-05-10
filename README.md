@@ -10,6 +10,8 @@
 * ch04(*time:2016-5-9*):重新设计hoverDataMap中的init方法,使在生成data时就将canvas生成图片,防止报错,处理单条数据线的动画问题,并且兼容两条线的动画.但是一个数据线是tip框还是有bug
 * ch05(*time:2016-5-10*):优化两条线与一条线的兼容问题,并且添加获取缩略图代码.
 * ch06(*time:2016-5-10*):全部配置化接口用法,并且优化tip提示框问题.
+* ch07(*time:2016-5-10*):全部重新生成动态数据,页面中出现12个canvan,点击放大出效果.运用调节相对值得left和top.`var l = this.parentNode.getBoundingClientRect().left || this.parentNode.offsetLeft;
+                                                                                    var t = this.parentNode.getBoundingClientRect().top || this.parentNode.offsetTop;`
 
 
->>>>下个版本将会把代码重度使用,采取大压力测试...
+>>>>下个版本将会把调整细节,tip框的显示位置,一些细小的bug 等...

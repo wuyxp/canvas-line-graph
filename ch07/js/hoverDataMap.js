@@ -167,8 +167,12 @@ hoverDataMap.prototype.mousemove = function(gd){
     gd.canvas.onmousemove = function(e){
         //根据假数据生成tip提示框
 
-        var tx = (e.pageX-this.parentNode.offsetLeft)*_this.MULTIPLE;
-        var ty = (e.pageY-this.parentNode.offsetTop)*_this.MULTIPLE;
+
+        var l = this.parentNode.getBoundingClientRect().left || this.parentNode.offsetLeft;
+        var t = this.parentNode.getBoundingClientRect().top || this.parentNode.offsetTop;
+
+        var tx = (e.pageX-l)*_this.MULTIPLE;
+        var ty = (e.pageY-t)*_this.MULTIPLE;
         if(ty>(_this.oy+_this.h) || ty<(_this.oy) || tx<_this.ox || tx> (_this.ox+_this.w)){
             //如果鼠标在那个表格之外,那么返回false隐藏tip
             if(oImagebase){
