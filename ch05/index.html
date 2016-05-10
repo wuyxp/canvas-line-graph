@@ -10,8 +10,13 @@
 </head>
 <body>
 <h1>测试canvas11133311</h1>
+
 <!-- 测试用图片-->
 <div id="canvas"></div>
+<h2>缩略图</h2>
+<!-- 存放缩略图的标签-->
+<img src="" alt="" id="img1" width="300" height="300" style="float: left">
+<img src="" alt="" id="img2" width="300" height="300" style="float: left">
 
 <script src="js/tween.js"></script>
 <script src="js/common.js"></script>
@@ -61,10 +66,17 @@
     var oCDM = new createDataMap(oCanvas,oCM,TABLE_LEFT*MULTIPLE,(TABLE_TOP-TABLE_HEIGHT)*MULTIPLE,TABLE_WIDTH*MULTIPLE,TABLE_HEIGHT*MULTIPLE);
 
     oCDM.drawDataMap("#beecfd",res);
-    //oCDM.drawDataMap("#ef8686",res1);
+    oCDM.drawDataMap("#ef8686",res1);
 
 
     oCDM.starDraw(true);//配置好数据,开始画
+
+    //获取缩略图
+    var src = oCDM.getDataImage();
+    document.querySelector("#img1").src = src[0].src;
+    document.querySelector("#img1").title = src[0].title;
+    document.querySelector("#img2").src = src[1].src;
+    document.querySelector("#img2").title = src[1].title;
 
 </script>
 </body>

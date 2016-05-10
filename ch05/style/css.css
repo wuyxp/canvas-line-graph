@@ -1,0 +1,15 @@
+#canvas{
+    width:800px;
+    height:800px;
+    margin: 0px auto;
+    position: relative;
+}
+#canvas canvas{
+    width: 100%;
+    height: 100%;;
+}
+canvas{
+    border : 1px solid;
+
+}
+
