@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <link rel="stylesheet" href="style/css.css">
+
+    <script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script>
+</head>
+<body>
+<h1>测试canvas11133311</h1>
+
+<!-- 测试用图片-->
+<div id="canvas"></div>
+<h2>缩略图</h2>
+<!-- 存放缩略图的标签-->
+<img src="" alt="" id="img1" width="300" height="150" style="float: left">
+<img src="" alt="" id="img2" width="300" height="150" style="float: left">
+
+<script src="js/tween.js"></script>
+<script src="js/common.js"></script>
+<script src="js/config.js"></script>
+<script src="js/hoverDataMap.js"></script>
+<script src="js/createTable.js"></script>
+<script src="js/createMap.js"></script>
+<script src="js/createDataMap.js"></script>
+
+
+<script src="js/init.js"></script>
+<script>
+
+    var oDiv = $("#canvas");
+
+
+    var yc = new yunChar(oDiv,{
+        type : "line", //默认线性,也就有着一种
+        multiple : 2,  //canvas缩放程度,按照是否有retian屏幕兼容
+        animation : true, //是否有动画效果
+        axes : {    //坐标轴设置
+            ox  :   100,
+            oy  :   300,
+            x   :   {
+                len  : 670,
+                text : "流量Mbps",
+                data : ["0","0.2","0.4","0.6","0.8","1"],
+                scale: true,
+                line : true
+            },
+            y   :   {
+                len  : 260,
+                text : "时间",
+                data : ["6:00","7:00","8:00","9:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00"],
+                scale: true,
+                line : false
+            }
+        },
+        dataset : [ //坐标数据内部设置
+            {
+                backgroundColor : "#beecfd",
+                label : "同行线",
+                data : [0.1,0.1,0.2,0.2,0.1,0.1,0.2,0.1,0.2,0.1,0.2,0.2,0.2,0.3,0.2,0.2,0.2,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.5,0.5,0.5,0.5,0.6,0.6,0.8,0.7,0.7,0.6,1.1,0.8,0.9,0.8,1.9,0.7,0.7,0.7,0.8,0.7,0.6,0.6,0.6,0.9,0.6,0.6,0.6,0.6,0.6,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.4,0.4,0.5,0.6,0.8,0.4,0.4,0.3,0.3,0.3,0.3,0.3,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2]
+            },{
+                backgroundColor : "#ef8686",
+                label : "警报线",
+                data : [0.6, null, 0.9, null, 0.7, 1, 0.6, null, 0.7, null, 0.2, 0.9, null, 0.8, 1, 0.4, 0.8, null, 0.8, null, 0.8, null, 0.9, 0.4, 0.7, null, 0.5, 0.8, 0.9, 0.3, null, null, null, 0.8, 0.4, 0.4, 0.9, 0.2, 1, null, null, null, null, null, 0.8, null, null, null, null, null, 0.1, 0.6, 0.8, null, 0.5, null, 0.8, null, 0.7, 0.9, null, 0.9, null, null, null, 0.4, 0.4, null, 0.4, 0.2, 1, null, 0.8, null, null, 0.5, 0.1, null, 0.8, 0.1, 0.1, null, 0.9, 0.1, null, null, 0.4, 0.4, null, 1, 0.9, null, null, null, null, null, null]
+            }
+
+        ],
+        tip : {   //提示框的内容
+            style : "table-tip-style1",
+            title : "线说明",
+            data : ["同行线:","警报线:"],
+            unit : "M"
+        }
+
+
+    });
+
+    var src = yc.getDataImage();
+    $("#img1").src = src[0].src;
+    $("#img1").title = src[0].title;
+    $("#img2").src = src[1].src;
+    $("#img2").title = src[1].title;
+
+
+    function $(str){
+        return document.querySelector(str);
+    }
+
+
+</script>
+</body>
+</html>
