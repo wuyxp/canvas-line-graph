@@ -21,9 +21,13 @@
 * 声明个json对象
 ***
     `{type : "line", //默认线性,也就有着一种
+
         multiple : 2,  //canvas缩放程度,按照是否有retian屏幕兼容
+
         animation : false, //是否有动画效果
+
         axes : {    //坐标轴设置
+
             ox  :   40,
             oy  :   200,
             x   :   {
@@ -41,6 +45,7 @@
                 line : false
             }
         },
+
         dataset : [ //坐标数据内部设置
             {
                 backgroundColor : "#beecfd",
@@ -52,6 +57,7 @@
                 data : [...]
             }
         ],
+        
         tip : {   //提示框的内容
             show : false, //是否展示
             style : "table-tip-style1",
