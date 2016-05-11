@@ -18,7 +18,7 @@ window.requestAnimFrame = (function(){
  */
 
 //数据折线构造函数
-function createDataMap(gd,cm,ox,oy,w,h,MULTIPLE){
+function createDataMap(gd,cm,ox,oy,w,h,MULTIPLE,max){
     this.ox = ox;
     this.oy = oy;
     this.w = w;
@@ -29,7 +29,7 @@ function createDataMap(gd,cm,ox,oy,w,h,MULTIPLE){
     this.cm = cm; // 坐标轴对象作为参数传入hoverDataMap对象中
     this.imagebg; // 预留一张没有数据的图片作为背景
 
-    this.max; //数据集体里最大的数
+    this.max = max; //数据集体里最大的数
 
     this._cacheData=[];//将drawDataMap的值放到缓存里,回头集体画出来.
 
@@ -76,7 +76,6 @@ createDataMap.prototype.starDraw = function(animation){
     var aData = this.getCacheData();
 
     this.max = this.setScale(aData);
-
     if(animation){
         this.animation(aData,function () {
             this.oHover.init();
@@ -98,11 +97,13 @@ createDataMap.prototype.setScale = function(adata){
         max = max > (m = Math.max.apply(null,adata[i].resdata)) ? max : m;
     }
 
+    max = this.max || max;
+
     for(var i=0;i<adata.length;i++){
         adata[i]["d"] = {};
         for(var j=0,l=adata[i].resdata.length;j<l;j++){
-            var y = ((max-adata[i].resdata[j])/max)*this.h+this.oy;
-            var x = j/l*this.w+this.ox;
+            var y = ((max-adata[i].resdata[j])/max)*(this.h-100)+this.oy+100;
+            var x = j/(l-1 || 1)*(this.w-60)+this.ox;
             adata[i]["d"][parseInt(x)] = {};
             adata[i]["d"][parseInt(x)].v = adata[i].resdata[j];
             adata[i]["d"][parseInt(x)].x = x;
@@ -110,6 +111,7 @@ createDataMap.prototype.setScale = function(adata){
         }
 
     }
+
     return max;
 }
 
@@ -133,8 +135,9 @@ createDataMap.prototype.drawLine = function(gd,adata,cbfun){
             if(resdata[i] === null) {
                 lint_s = 0;
             }else{
-                var y = ((m-resdata[i])/m)*this.h+this.oy;
-                var x = i/l*this.w+this.ox;
+                //将所有标记都从y轴向下缩小100
+                var y = ((m-resdata[i])/m)*(this.h-100)+this.oy+100;
+                var x = i/(l-1 || 1)*(this.w-60)+this.ox;
                 if(lint_s === 0){
                     gd.moveTo(x,y);
                 }else{
@@ -216,10 +219,10 @@ createDataMap.prototype.animation = function(adata,cbfun){
                     if(resdata[j] === null) {
                         lint_s = 0;
                     }else {
-                        var _y = ((m - resdata[j]) / m) * _this.h + _this.oy;
+                        var _y = ((m - resdata[j]) / m) * (_this.h-100) + _this.oy+100;
                         var start_y = _this.oy + _this.h / 2;
                         var y = Math.tween.Quad.easeInOut(state_y, start_y, _y - start_y, 100);
-                        var x = j / a_j * _this.w + _this.ox;
+                        var x = j / (a_j-1 || 0) * (_this.w-60) + _this.ox;
 
                         if (lint_s == 0) {
                             _this.gd.moveTo(x, y);
@@ -346,10 +349,10 @@ createMap.prototype.init = function(gd){
 
     //坐标刻度线
     if(this.y.line){
-        this.drawScaleLine(gd,this.ox,this.oy,this.endx,this.endy,"#f3f3f5",this.y.data,"vertical");
+        this.drawScaleLine(gd,this.ox,this.oy,this.endx,this.endy,"#f3f3f5",this.x.data,"vertical");
     }
     if(this.x.line){
-        this.drawScaleLine(gd,this.ox,this.oy,this.endx,this.endy,"#f3f3f5",this.x.data,"horizontal");
+        this.drawScaleLine(gd,this.ox,this.oy,this.endx,this.endy,"#f3f3f5",this.y.data,"horizontal");
     }
 
 }
@@ -393,7 +396,8 @@ createMap.prototype.drawScale = function(gd,x0,y0,x1,y1,data){
 
     var direction = x0 == x1 ? "vertical" : "horizontal" //方向
     var l = data.length;
-    var s = (y1-y0)/l || (x1-x0)/l;
+
+
 
     gd.save()
     gd.beginPath();
@@ -406,8 +410,10 @@ createMap.prototype.drawScale = function(gd,x0,y0,x1,y1,data){
 
     for(var i=0;i<l;i++){
         if(direction == "vertical"){
+            var s = (y1-y0+100)/(l-1|| 0);
             gd.fillText(data[i],x0-10,y0+s*i-20);
         }else{
+            var s = (x1-x0-80)/(l -1 ||0);
             gd.fillText(data[i],x0+s*i+20,y0+10);
         }
 
@@ -432,13 +438,13 @@ createMap.prototype.drawScaleLine = function(gd,x0,y0,x1,y1,color,data,d){
     for(var i=0;i<l;i++){
         gd.beginPath();
         if(direction == "vertical"){
-            var s = (x1-x0)/l;
+            var s = (x1-x0-80)/(l-1 || 0);
             var sx = x0+(i*s);
             gd.moveTo(sx,y0);
             gd.lineTo(sx,y1);
 
         }else{
-            var s = (y1-y0)/l;
+            var s = (y1-y0+100)/(l-1 || 0);
             var sy = y0+(i*s);
             gd.moveTo(x0,sy);
             gd.lineTo(x1,sy);
@@ -546,12 +552,18 @@ hoverDataMap.prototype.init = function(){
 
 //绘制tip元素
 hoverDataMap.prototype.drawTip = function(gd,x,y,Data){
+    //矩形宽高
     var rect_w = 300;
     var rect_h = 150;
 
+    //矩形位置
     var x = x;
     var y = y;
 
+
+    //矩形相对位置
+    var top = 0;
+    var left = 0;
 
     var style = Data.style;
     var title = Data.title;
@@ -568,6 +580,12 @@ hoverDataMap.prototype.drawTip = function(gd,x,y,Data){
             tipbg = "#fdf0da";
             tippointbg = "#f13b3b";
             break;
+        case "table-tip-style1-small":
+            tipbg = "#beecfd";
+            tippointbg = "#7fd9fb";
+            rect_w = 200;
+            rect_h = 100;
+            top = 30;
     };
 
     if(x>(this.ox+this.w-rect_w)){  //鼠标移入到右边缘
@@ -582,7 +600,7 @@ hoverDataMap.prototype.drawTip = function(gd,x,y,Data){
         gd.shadowColor = 'rgba(0, 0, 0, 0.2)'; // 颜色
         gd.fillStyle=tipbg;
 
-        gd.roundRect(x,y,rect_w,rect_h,20).fill();
+        gd.roundRect(x,y+top,rect_w,rect_h,20).fill();
 
         gd.moveTo(x+rect_w,y+40);
         gd.lineTo(x+rect_w+20,y+40+40);
@@ -608,7 +626,7 @@ hoverDataMap.prototype.drawTip = function(gd,x,y,Data){
         gd.shadowColor = 'rgba(0, 0, 0, 0.2)'; // 颜色
         gd.fillStyle=tipbg;
 
-        gd.roundRect(x,y,rect_w,rect_h,20).fill();
+        gd.roundRect(x,y+top,rect_w,rect_h,20).fill();
 
         gd.moveTo(x,y+40);
         gd.lineTo(x-20,y+40+40);
@@ -638,8 +656,8 @@ hoverDataMap.prototype.drawTip = function(gd,x,y,Data){
 
 
     if(data.length == 1){
-        gd.fillText(title,x+20,y+30);
-        gd.fillText(data[0],x+20,y+80);
+        gd.fillText(title,x+20,y+50);
+        gd.fillText(data[0],x+20,y+90);
         gd.stroke();
     }else{
         gd.fillText(title,x+20,y+20);
@@ -770,7 +788,8 @@ function yunChar(obj,setting){
 
     var dataset = setting.dataset;
     var axes = setting.axes;
-
+    var max = setting.max;
+    
     var oC = new createTable(obj.offsetWidth*MULTIPLE,obj.offsetHeight*MULTIPLE);
 
     this.oCDM; //存放data线条
@@ -788,7 +807,7 @@ function yunChar(obj,setting){
     oCM.setTip(setting.tip);
 
 
-    this.oCDM = new createDataMap(oCanvas,oCM,axes.ox*MULTIPLE,(axes.oy-axes.y.len)*MULTIPLE,axes.x.len*MULTIPLE,axes.y.len*MULTIPLE,MULTIPLE);
+    this.oCDM = new createDataMap(oCanvas,oCM,axes.ox*MULTIPLE,(axes.oy-axes.y.len)*MULTIPLE,axes.x.len*MULTIPLE,axes.y.len*MULTIPLE,MULTIPLE,max);
 
 
 

@@ -94,7 +94,8 @@ createMap.prototype.drawScale = function(gd,x0,y0,x1,y1,data){
 
     var direction = x0 == x1 ? "vertical" : "horizontal" //方向
     var l = data.length;
-    var s = (y1-y0)/l || (x1-x0)/l;
+
+
 
     gd.save()
     gd.beginPath();
@@ -107,8 +108,10 @@ createMap.prototype.drawScale = function(gd,x0,y0,x1,y1,data){
 
     for(var i=0;i<l;i++){
         if(direction == "vertical"){
+            var s = (y1-y0+100)/(l-1|| 0);
             gd.fillText(data[i],x0-10,y0+s*i-20);
         }else{
+            var s = (x1-x0-80)/(l -1 ||0);
             gd.fillText(data[i],x0+s*i+20,y0+10);
         }
 
@@ -133,13 +136,13 @@ createMap.prototype.drawScaleLine = function(gd,x0,y0,x1,y1,color,data,d){
     for(var i=0;i<l;i++){
         gd.beginPath();
         if(direction == "vertical"){
-            var s = (x1-x0)/l;
+            var s = (x1-x0-80)/(l-1 || 0);
             var sx = x0+(i*s);
             gd.moveTo(sx,y0);
             gd.lineTo(sx,y1);
 
         }else{
-            var s = (y1-y0)/l;
+            var s = (y1-y0+100)/(l-1 || 0);
             var sy = y0+(i*s);
             gd.moveTo(x0,sy);
             gd.lineTo(x1,sy);
