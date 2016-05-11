@@ -64,7 +64,6 @@ createDataMap.prototype.starDraw = function(animation){
 
     if(animation){
         this.animation(aData,function () {
-            console.log(aData);
             this.oHover.init();
         });
     }else{

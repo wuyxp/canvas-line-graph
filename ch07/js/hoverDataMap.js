@@ -167,9 +167,8 @@ hoverDataMap.prototype.mousemove = function(gd){
     gd.canvas.onmousemove = function(e){
         //根据假数据生成tip提示框
 
-
-        var l = this.parentNode.getBoundingClientRect().left || this.parentNode.offsetLeft;
-        var t = this.parentNode.getBoundingClientRect().top || this.parentNode.offsetTop;
+        var l = (this.parentNode.getBoundingClientRect().left || this.parentNode.offsetLeft)+document.body.scrollLeft;
+        var t = (this.parentNode.getBoundingClientRect().top || this.parentNode.offsetTop)+document.body.scrollTop;
 
         var tx = (e.pageX-l)*_this.MULTIPLE;
         var ty = (e.pageY-t)*_this.MULTIPLE;
