@@ -11,7 +11,62 @@
 * ch05(*time:2016-5-10*):优化两条线与一条线的兼容问题,并且添加获取缩略图代码.
 * ch06(*time:2016-5-10*):全部配置化接口用法,并且优化tip提示框问题.
 * ch07(*time:2016-5-10*):全部重新生成动态数据,页面中出现12个canvan,点击放大出效果.运用调节相对值得left和top.
-* ch08(*time:2016-5-11*):调节tip框动态显示位置,并且调节显示x,y轴的比例问题.                            
+* ch08(*time:2016-5-11*):调节tip框动态显示位置,并且调节显示x,y轴的比例问题.
 
 
 >>>>下个版本将会把调整细节,集体搜集下来的bug 等...
+
+##讲打包后的代码合并压缩至yunchar文件夹
+>api介绍
+* 声明个json对象
+***
+    `{type : "line", //默认线性,也就有着一种
+        multiple : 2,  //canvas缩放程度,按照是否有retian屏幕兼容
+        animation : false, //是否有动画效果
+        axes : {    //坐标轴设置
+            ox  :   40,
+            oy  :   200,
+            x   :   {
+                len  : 300,
+                text : "流量Mbps",
+                data : ["6:00","9:00","12:00","15:00","18:00"],
+                scale: true,
+                line : true
+            },
+            y   :   {
+                len  : 160,
+                text : "时间",
+                data : ["0","0.9","1.8"],
+                scale: true,
+                line : false
+            }
+        },
+        dataset : [ //坐标数据内部设置
+            {
+                backgroundColor : "#beecfd",
+                label : "同行线",
+                data : [...]
+            },{
+                backgroundColor : "#ef8686",
+                label : "警报线",
+                data : [...]
+            }
+
+        ],
+        tip : {   //提示框的内容
+            show : false, //是否展示
+            style : "table-tip-style1",
+            title : "线说明",
+            data : ["同行线:","警报线:"],
+            unit : "M"
+        }
+    }`
+***
+* 然后声明对象
+    `new yunChar(oDiv,json);`
+    其中oDiv是包裹canvas的对象
+    上面配置json数据的原点位置,和宽高都是基于oDiv的左上角;
+* 在new对象的下有个getDataImage方法可以获取所描述数据先的图片获取是个数组,里面存放的base64形式的src.
+
+    `var yc = new yunChar($("#canvas")[0],d);
+     var src = yc.getDataImage();`
