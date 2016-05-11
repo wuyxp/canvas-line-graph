@@ -20,7 +20,8 @@
 >api介绍
 * 声明个json对象
 ***
-    `
+    `json:
+    
     {type : "line", //默认线性,也就有着一种
 
         multiple : 2,  //canvas缩放程度,按照是否有retian屏幕兼容
