@@ -50,8 +50,7 @@
                 backgroundColor : "#ef8686",
                 label : "警报线",
                 data : [...]
-            }`
-
+            }
         ],
         tip : {   //提示框的内容
             show : false, //是否展示
