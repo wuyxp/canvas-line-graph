@@ -10,8 +10,10 @@ function createMap(json,gd,MULTIPLE){
     this.oy = json.oy * MULTIPLE;
     this.x = json.x;
     this.y = json.y;
-
+    
     this.tip; //坐标轴提示框的文字
+
+    this.text_y = {};
 
     this.endx = this.ox+this.x.len* MULTIPLE;
     this.endy = this.oy-this.y.len* MULTIPLE;
@@ -113,10 +115,12 @@ createMap.prototype.drawScale = function(gd,x0,y0,x1,y1,data){
         }else{
             var s = (x1-x0-80)/(l -1 ||0);
             gd.fillText(data[i],x0+s*i+20,y0+10);
+
+            this.text_y[Math.round(x0+s*i)] = data[i];
         }
 
     }
-
+    
     gd.stroke();
     gd.restore();
 
@@ -132,7 +136,7 @@ createMap.prototype.drawScaleLine = function(gd,x0,y0,x1,y1,color,data,d){
     gd.lineWidth = 2;
     gd.strokeStyle = color;
     gd.translate(0.5,0.5);
-
+    
     for(var i=0;i<l;i++){
         gd.beginPath();
         if(direction == "vertical"){

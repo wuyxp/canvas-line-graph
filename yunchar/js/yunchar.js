@@ -103,7 +103,7 @@ createDataMap.prototype.setScale = function(adata){
         adata[i]["d"] = {};
         for(var j=0,l=adata[i].resdata.length;j<l;j++){
             var y = ((max-adata[i].resdata[j])/max)*(this.h-100)+this.oy+100;
-            var x = j/(l-1 || 1)*(this.w-60)+this.ox;
+            var x = j/(l-1 || 1)*(this.w-80)+this.ox;
             adata[i]["d"][parseInt(x)] = {};
             adata[i]["d"][parseInt(x)].v = adata[i].resdata[j];
             adata[i]["d"][parseInt(x)].x = x;
@@ -137,7 +137,7 @@ createDataMap.prototype.drawLine = function(gd,adata,cbfun){
             }else{
                 //将所有标记都从y轴向下缩小100
                 var y = ((m-resdata[i])/m)*(this.h-100)+this.oy+100;
-                var x = i/(l-1 || 1)*(this.w-60)+this.ox;
+                var x = i/(l-1 || 1)*(this.w-80)+this.ox;
                 if(lint_s === 0){
                     gd.moveTo(x,y);
                 }else{
@@ -166,7 +166,7 @@ createDataMap.prototype.animation = function(adata,cbfun){
 
         var start_x = _this.ox;
         var start_y = _this.oy+_this.h/2;
-        var end_x = _this.ox + _this.w;
+        var end_x = _this.ox + _this.w-80;
         var end_y = start_y;
         state_x++;
         var _x = Math.tween.Quad.easeInOut(state_x,start_x,end_x,50);
@@ -222,7 +222,7 @@ createDataMap.prototype.animation = function(adata,cbfun){
                         var _y = ((m - resdata[j]) / m) * (_this.h-100) + _this.oy+100;
                         var start_y = _this.oy + _this.h / 2;
                         var y = Math.tween.Quad.easeInOut(state_y, start_y, _y - start_y, 100);
-                        var x = j / (a_j-1 || 0) * (_this.w-60) + _this.ox;
+                        var x = j / (a_j-1 || 0) * (_this.w-80) + _this.ox;
 
                         if (lint_s == 0) {
                             _this.gd.moveTo(x, y);
@@ -314,6 +314,8 @@ function createMap(json,gd,MULTIPLE){
     this.y = json.y;
     
     this.tip; //坐标轴提示框的文字
+
+    this.text_y = {};
 
     this.endx = this.ox+this.x.len* MULTIPLE;
     this.endy = this.oy-this.y.len* MULTIPLE;
@@ -415,10 +417,12 @@ createMap.prototype.drawScale = function(gd,x0,y0,x1,y1,data){
         }else{
             var s = (x1-x0-80)/(l -1 ||0);
             gd.fillText(data[i],x0+s*i+20,y0+10);
+
+            this.text_y[Math.round(x0+s*i)] = data[i];
         }
 
     }
-
+    
     gd.stroke();
     gd.restore();
 
@@ -434,7 +438,7 @@ createMap.prototype.drawScaleLine = function(gd,x0,y0,x1,y1,color,data,d){
     gd.lineWidth = 2;
     gd.strokeStyle = color;
     gd.translate(0.5,0.5);
-
+    
     for(var i=0;i<l;i++){
         gd.beginPath();
         if(direction == "vertical"){
@@ -693,7 +697,12 @@ hoverDataMap.prototype.drawDataPoint = function(gd,tx,ty,oImagebase){
     //处理鼠标移入到canvan上吧鼠标移入的距离乘以像素缩小的倍数
     var dIndex = tx;
 
+    var unit = _m.tip.unit;
+    var reg_x = new RegExp('\\'+unit+'x'+'\\'+unit,'g');
+    var reg_y = new RegExp('\\'+unit+'y'+'\\'+unit,'g');
 
+    //console.log(reg_x,reg_y);
+    //console.log(_m.text_y);
     //配置tip显示数据的
     var oTableTipData = {
         style : _m.tip.style,
@@ -715,16 +724,18 @@ hoverDataMap.prototype.drawDataPoint = function(gd,tx,ty,oImagebase){
             dIndex--;
         }
         var str = "";
+        //console.log(_m.text_y);
+        //console.log(_m_tip_data[i],dd_d.x);
         if(dd_d.v){
-            str = _m_tip_data[i]+dd_d.v+_m.tip.unit;
+            oTableTipData.title = _m.tip.title.replace(reg_x,_m.text_y[Math.round(dd_d.x)]).replace(reg_y,dd_d.v);
+            str = _m_tip_data[i].replace(reg_x,_m.text_y[Math.round(dd_d.x)]).replace(reg_y,dd_d.v);
         }else{
-            str = _m_tip_data[i]+"无";
+            str = _m_tip_data[i].replace(reg_x,_m.text_y[Math.round(dd_d.x)]).replace(reg_y,dd_d.v).replace(reg_y,dd_d.v);
         }
         _oTableTipData_data.push(str);
 
         this.hoverPoint(gd,dd_d.x,dd_d.y,dd.color);
     }
-
 
 
     oTableTipData.data = _oTableTipData_data;
@@ -1002,3 +1013,7 @@ var Tween = {
     }
 }
 Math.tween = Tween;
+
+/*
+* ch11版本
+* */
