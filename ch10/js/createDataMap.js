@@ -24,16 +24,18 @@ function createDataMap(gd,cm,ox,oy,w,h,MULTIPLE,max){
 }
 
 //将所有数据设置到内存上
-createDataMap.prototype.drawDataMap = function(color,data){
+createDataMap.prototype.drawDataMap = function(color,data,data_x){
     var dataMap = {};
-
+    var data_x = data_x || [];
     var resdata = data;
+
     var l = resdata.length;
     var m = Math.max.apply(null,resdata);
 
     dataMap.color = color;
 
     dataMap.resdata = resdata;
+    dataMap.data_x = data_x; //将值与x轴建立对应关系
 
 
     this.gd.DataMap.push(dataMap); //将所有data数据添加道dataMap对象上
@@ -91,6 +93,7 @@ createDataMap.prototype.setScale = function(adata){
             var x = j/(l-1 || 1)*(this.w-80)+this.ox;
             adata[i]["d"][parseInt(x)] = {};
             adata[i]["d"][parseInt(x)].v = adata[i].resdata[j];
+            adata[i]["d"][parseInt(x)].v_x = adata[i].data_x[j];
             adata[i]["d"][parseInt(x)].x = x;
             adata[i]["d"][parseInt(x)].y = y;
         }

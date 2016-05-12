@@ -24,8 +24,8 @@ hoverDataMap.prototype.init = function(){
 //绘制tip元素
 hoverDataMap.prototype.drawTip = function(gd,x,y,Data){
     //矩形宽高
-    var rect_w = 300;
-    var rect_h = 150;
+    var rect_w = this._map.tip.width;
+    var rect_h = this._map.tip.heigth;
 
     //矩形位置
     var x = x;
@@ -33,8 +33,8 @@ hoverDataMap.prototype.drawTip = function(gd,x,y,Data){
 
 
     //矩形相对位置
-    var top = 0;
-    var left = 0;
+    var top = -rect_h/2;
+    var left = 60;
 
     var style = Data.style;
     var title = Data.title;
@@ -51,106 +51,121 @@ hoverDataMap.prototype.drawTip = function(gd,x,y,Data){
             tipbg = "#fdf0da";
             tippointbg = "#f13b3b";
             break;
-        case "table-tip-style1-small":
-            tipbg = "#beecfd";
-            tippointbg = "#7fd9fb";
-            rect_w = 200;
-            rect_h = 100;
-            top = 30;
+        
     };
 
-    if(x>(this.ox+this.w-rect_w)){  //鼠标移入到右边缘
-        x = x - 400;
-
-        gd.save();
-        gd.beginPath();
-        gd.fillStyle = '#EB852A';
-        gd.shadowOffsetX = 5; // 阴影Y轴偏移
-        gd.shadowOffsetY = 5; // 阴影X轴偏移
-        gd.shadowBlur = 14; // 模糊尺寸
-        gd.shadowColor = 'rgba(0, 0, 0, 0.2)'; // 颜色
-        gd.fillStyle=tipbg;
-
-        gd.roundRect(x,y+top,rect_w,rect_h,20).fill();
-
-        gd.moveTo(x+rect_w,y+40);
-        gd.lineTo(x+rect_w+20,y+40+40);
-        gd.lineTo(x+rect_w,y+40+80);
-        gd.fill();
-
-        gd.beginPath();
-        gd.fillStyle=tippointbg;
-        gd.strokeStyle="#fff";
-        gd.lineWidth = 3;
-        gd.arc(x+rect_w,y+77,8,0,2*Math.PI);
-        gd.fill();
-        gd.stroke();
-    }else{
-        x = x;
-
-        gd.save();
-        gd.beginPath();
-        gd.fillStyle = '#EB852A';
-        gd.shadowOffsetX = 5; // 阴影Y轴偏移
-        gd.shadowOffsetY = 5; // 阴影X轴偏移
-        gd.shadowBlur = 14; // 模糊尺寸
-        gd.shadowColor = 'rgba(0, 0, 0, 0.2)'; // 颜色
-        gd.fillStyle=tipbg;
-
-        gd.roundRect(x,y+top,rect_w,rect_h,20).fill();
-
-        gd.moveTo(x,y+40);
-        gd.lineTo(x-20,y+40+40);
-        gd.lineTo(x,y+40+80);
-        gd.fill();
-
-        gd.beginPath();
-        gd.fillStyle=tippointbg;
-        gd.strokeStyle="#fff";
-        gd.lineWidth = 3;
-        gd.arc(x,y+77,8,0,2*Math.PI);
-        gd.fill();
-        gd.stroke();
-    }
-
-
-
-
-
-
+    gd.save();
     gd.beginPath();
-    gd.fillStyle='#3c3c3c';
-    gd.font='26px a';
-    gd.textAlign='left';
-    gd.textBaseline='top';
-    gd.translate(0.5,0.5);
+    gd.fillStyle = '#EB852A';
+    gd.shadowOffsetX = 5; // 阴影Y轴偏移
+    gd.shadowOffsetY = 5; // 阴影X轴偏移
+    gd.shadowBlur = 14; // 模糊尺寸
+    gd.shadowColor = 'rgba(0, 0, 0, 0.2)'; // 颜色
+    gd.fillStyle=tipbg;
+    gd.textBaseline= 'middle';
 
 
-    if(data.length == 1){
-        gd.fillText(title,x+20,y+50);
-        gd.fillText(data[0],x+20,y+90);
+    if(x>(this.ox+this.w-rect_w)){  //鼠标移入到右边缘
+
+        gd.roundRect(x-rect_w-left,y+top,rect_w,rect_h,20).fill();
+
+        gd.moveTo(x-left,y-40);
+        gd.lineTo(x-left+20,y);
+        gd.lineTo(x-left,y+40);
+        gd.fill();
+
+        gd.beginPath();
+        gd.fillStyle=tippointbg;
+        gd.strokeStyle="#fff";
+        gd.lineWidth = 3;
+        gd.arc(x-left,y,8,0,2*Math.PI);
+        gd.fill();
         gd.stroke();
+
+
+        gd.beginPath();
+        gd.fillStyle='#3c3c3c';
+        gd.font='26px a';
+        gd.textAlign='left';
+        gd.translate(0.5,0.5);
+
+
+        if(data.length == 1){
+            gd.fillText(title,x-rect_w-left+20,y+top/2);
+            gd.fillText(data[0],x-rect_w-left+20,y-top/2);
+            gd.stroke();
+        }else{
+            gd.fillText(title,x-rect_w-left+20,y+top/2);
+            gd.fillText(data[0],x-rect_w-left+20,y);
+            gd.stroke();
+            gd.fillStyle='#f13b3b';
+            gd.fillText(data[1],x-rect_w-left+20,y-top/2);
+            gd.stroke();
+        }
+
+        gd.restore();
     }else{
-        gd.fillText(title,x+20,y+20);
-        gd.fillText(data[0],x+20,y+60);
+
+        gd.roundRect(x+left,y+top,rect_w,rect_h,20).fill();
+
+        gd.moveTo(x+left,y-40);
+        gd.lineTo(x+left-20,y);
+        gd.lineTo(x+left,y+40);
+        gd.fill();
+
+        gd.beginPath();
+        gd.fillStyle=tippointbg;
+        gd.strokeStyle="#fff";
+        gd.lineWidth = 3;
+        gd.arc(x+left,y,8,0,2*Math.PI);
+        gd.fill();
         gd.stroke();
-        gd.fillStyle='#f13b3b';
-        gd.fillText(data[1],x+20,y+100);
-        gd.stroke();
+
+
+        gd.beginPath();
+        gd.fillStyle='#3c3c3c';
+        gd.font='26px a';
+        gd.textAlign='left';
+
+        gd.translate(0.5,0.5);
+
+
+        if(data.length == 1){
+            gd.fillText(title,x+left+20,y+top/2);
+            gd.fillText(data[0],x+left+20,y-top/2);
+            gd.stroke();
+        }else{
+            gd.fillText(title,x+left+20,y);
+            gd.fillText(data[0],x+left+20,y+60);
+            gd.stroke();
+            gd.fillStyle='#f13b3b';
+            gd.fillText(data[1],x+left+20,y+100);
+            gd.stroke();
+        }
+
+        gd.restore();
     }
 
-    gd.restore();
+
+
+
+
+
+
 
 };
 //将选中的点加粗
 hoverDataMap.prototype.hoverPoint = function(gd,x,y,color){
     gd.save();
     gd.beginPath();
-    gd.fillStyle=color;
+    gd.fillStyle="#fff";
     //gd.moveTo(x,y);
     //gd.lineTo(x+1,y+1);
-    gd.arc(x,y,5,0,2*Math.PI);
+    gd.lineWidth = 4;
+    gd.strokeStyle=color;
+    gd.arc(x,y,6,0,2*Math.PI);
     gd.fill();
+    gd.stroke();
     gd.restore();
 };
 
@@ -181,23 +196,36 @@ hoverDataMap.prototype.drawDataPoint = function(gd,tx,ty,oImagebase){
     //DataMap从目前来看,循环形式展示
 
     var _oTableTipData_data = [];
+    var dd_d_l = _m.endx;
+
+    var vector = _m.tip.vector;
+
     for(var i=0,j=_m_tip_data.length;i<j;i++){
 
         var dd = gd.DataMap[i];
         var dd_d = {};
-
         //如果鼠标没有到下一个节点,那么就用上一个节点的数值
-        while(dIndex>0 && !(dd_d = dd.d[dIndex])){
-            dIndex--;
+        //console.log(dIndex,dd_d_l);
+        while(dIndex > 0 && dIndex <= dd_d_l && !(dd_d = dd.d[dIndex])){
+            if(vector == "left"){
+                dIndex--;
+            }else{
+                dIndex++;
+                if(dIndex >=dd_d_l){
+                    dIndex--;
+                    vector = "left"
+                    //console.log("报错了");
+                };
+            }
+            //console.log(dIndex);
         }
+        vector = _m.tip.vector;
         var str = "";
         //console.log(_m.text_y);
         //console.log(_m_tip_data[i],dd_d.x);
-        if(dd_d.v){
-            oTableTipData.title = _m.tip.title.replace(reg_x,_m.text_y[Math.round(dd_d.x)]).replace(reg_y,dd_d.v);
-            str = _m_tip_data[i].replace(reg_x,_m.text_y[Math.round(dd_d.x)]).replace(reg_y,dd_d.v);
-        }else{
-            str = _m_tip_data[i].replace(reg_x,_m.text_y[Math.round(dd_d.x)]).replace(reg_y,dd_d.v).replace(reg_y,dd_d.v);
+        if(dd_d && dd_d.v){
+            oTableTipData.title = _m.tip.title.replace(reg_x,dd_d.v_x).replace(reg_y,dd_d.v);
+            str = _m_tip_data[i].replace(reg_x,dd_d.v_x).replace(reg_y,dd_d.v);
         }
         _oTableTipData_data.push(str);
 
@@ -208,7 +236,7 @@ hoverDataMap.prototype.drawDataPoint = function(gd,tx,ty,oImagebase){
     oTableTipData.data = _oTableTipData_data;
 
     if(_m.tip.show){
-        this.drawTip(gd,tx+50,ty-60,oTableTipData);
+        this.drawTip(gd,tx,ty,oTableTipData);
     }
 
 

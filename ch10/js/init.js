@@ -35,7 +35,7 @@ function yunChar(obj,setting){
 
 
     for(var i=0,datal = dataset.length;i<datal;i++){
-        this.oCDM.drawDataMap(dataset[i].backgroundColor,dataset[i].data);
+        this.oCDM.drawDataMap(dataset[i].backgroundColor,dataset[i].data,(dataset[i].data_x || []));//穿一个值于横坐标值的对应关系
     }
     this.oCDM.starDraw(setting.animation);//配置好数据,开始画
 

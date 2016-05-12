@@ -587,7 +587,7 @@ hoverDataMap.prototype.drawTip = function(gd,x,y,Data){
         case "table-tip-style1-small":
             tipbg = "#beecfd";
             tippointbg = "#7fd9fb";
-            rect_w = 200;
+            rect_w = 300;
             rect_h = 100;
             top = 30;
     };
@@ -606,16 +606,16 @@ hoverDataMap.prototype.drawTip = function(gd,x,y,Data){
 
         gd.roundRect(x,y+top,rect_w,rect_h,20).fill();
 
-        gd.moveTo(x+rect_w,y+40);
-        gd.lineTo(x+rect_w+20,y+40+40);
-        gd.lineTo(x+rect_w,y+40+80);
+        gd.moveTo(x+rect_w-3,y+40);
+        gd.lineTo(x+rect_w+20-3,y+40+40);
+        gd.lineTo(x+rect_w-3,y+40+80);
         gd.fill();
 
         gd.beginPath();
         gd.fillStyle=tippointbg;
         gd.strokeStyle="#fff";
         gd.lineWidth = 3;
-        gd.arc(x+rect_w,y+77,8,0,2*Math.PI);
+        gd.arc(x+rect_w-3,y+77,8,0,2*Math.PI);
         gd.fill();
         gd.stroke();
     }else{
@@ -714,23 +714,36 @@ hoverDataMap.prototype.drawDataPoint = function(gd,tx,ty,oImagebase){
     //DataMap从目前来看,循环形式展示
 
     var _oTableTipData_data = [];
+    var dd_d_l = _m.endx;
+
+    var vector = _m.tip.vector;
+
     for(var i=0,j=_m_tip_data.length;i<j;i++){
 
         var dd = gd.DataMap[i];
         var dd_d = {};
-
         //如果鼠标没有到下一个节点,那么就用上一个节点的数值
-        while(dIndex>0 && !(dd_d = dd.d[dIndex])){
-            dIndex--;
+        //console.log(dIndex,dd_d_l);
+        while(dIndex > 0 && dIndex <= dd_d_l && !(dd_d = dd.d[dIndex])){
+            if(vector == "left"){
+                dIndex--;
+            }else{
+                dIndex++;
+                if(dIndex >=dd_d_l){
+                    dIndex--;
+                    vector = "left"
+                    //console.log("报错了");
+                };
+            }
+            //console.log(dIndex);
         }
+        vector = _m.tip.vector;
         var str = "";
         //console.log(_m.text_y);
         //console.log(_m_tip_data[i],dd_d.x);
-        if(dd_d.v){
+        if(dd_d && dd_d.v){
             oTableTipData.title = _m.tip.title.replace(reg_x,_m.text_y[Math.round(dd_d.x)]).replace(reg_y,dd_d.v);
             str = _m_tip_data[i].replace(reg_x,_m.text_y[Math.round(dd_d.x)]).replace(reg_y,dd_d.v);
-        }else{
-            str = _m_tip_data[i].replace(reg_x,_m.text_y[Math.round(dd_d.x)]).replace(reg_y,dd_d.v).replace(reg_y,dd_d.v);
         }
         _oTableTipData_data.push(str);
 
@@ -1015,5 +1028,5 @@ var Tween = {
 Math.tween = Tween;
 
 /*
-* ch11版本
+* ch13版本
 * */

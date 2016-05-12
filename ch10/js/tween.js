@@ -180,5 +180,5 @@ var Tween = {
 Math.tween = Tween;
 
 /*
-* ch11版本
+* ch13版本
 * */
