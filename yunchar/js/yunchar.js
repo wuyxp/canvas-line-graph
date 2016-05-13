@@ -31,24 +31,40 @@ function createDataMap(gd,cm,ox,oy,w,h,MULTIPLE,max){
 
     this.max = max; //数据集体里最大的数
 
+    this.cbfun = function(){}; //执行回调的函数
+
     this._cacheData=[];//将drawDataMap的值放到缓存里,回头集体画出来.
 
     //启动表格的鼠标移动事件
-    this.oHover = new hoverDataMap(gd,this.cm,ox,oy,w,h,MULTIPLE);
+    this.oHover = new hoverDataMap(gd,this.cm,ox,oy,w,h,MULTIPLE,this.getCbfun,this);
 
+};
+
+
+createDataMap.prototype.hoverCbfun = function(fun){
+    this.cbfun = fun;
+};
+
+createDataMap.prototype.getCbfun = function(data){
+    //console.log(this.cbfun);
+    //console.log(data);
+    this.cbfun.call(null,data);
 }
 
-//将所有数据设置到内存上
-createDataMap.prototype.drawDataMap = function(color,data){
-    var dataMap = {};
 
+//将所有数据设置到内存上
+createDataMap.prototype.drawDataMap = function(color,data,data_x){
+    var dataMap = {};
+    var data_x = data_x || [];
     var resdata = data;
+
     var l = resdata.length;
     var m = Math.max.apply(null,resdata);
 
     dataMap.color = color;
 
     dataMap.resdata = resdata;
+    dataMap.data_x = data_x; //将值与x轴建立对应关系
 
 
     this.gd.DataMap.push(dataMap); //将所有data数据添加道dataMap对象上
@@ -106,6 +122,7 @@ createDataMap.prototype.setScale = function(adata){
             var x = j/(l-1 || 1)*(this.w-80)+this.ox;
             adata[i]["d"][parseInt(x)] = {};
             adata[i]["d"][parseInt(x)].v = adata[i].resdata[j];
+            adata[i]["d"][parseInt(x)].v_x = adata[i].data_x[j];
             adata[i]["d"][parseInt(x)].x = x;
             adata[i]["d"][parseInt(x)].y = y;
         }
@@ -315,8 +332,6 @@ function createMap(json,gd,MULTIPLE){
     
     this.tip; //坐标轴提示框的文字
 
-    this.text_y = {};
-
     this.endx = this.ox+this.x.len* MULTIPLE;
     this.endy = this.oy-this.y.len* MULTIPLE;
 
@@ -418,7 +433,6 @@ createMap.prototype.drawScale = function(gd,x0,y0,x1,y1,data){
             var s = (x1-x0-80)/(l -1 ||0);
             gd.fillText(data[i],x0+s*i+20,y0+10);
 
-            this.text_y[Math.round(x0+s*i)] = data[i];
         }
 
     }
@@ -536,7 +550,7 @@ createTable.prototype.getCanvas = function(){
  */
 
 //鼠标移入数据上时要做的操作
-function hoverDataMap(gd,obj,ox,oy,w,h,MULTIPLE){
+function hoverDataMap(gd,obj,ox,oy,w,h,MULTIPLE,cbfun,_cdm){
     this.gd = gd;
     this.ox = ox;
     this.oy = oy;
@@ -544,6 +558,9 @@ function hoverDataMap(gd,obj,ox,oy,w,h,MULTIPLE){
     this.h = h;
     this._map = obj;  //画布对象指向重置
     this.MULTIPLE = MULTIPLE;
+
+    this._cdm = _cdm; //当前画线的指向
+    this.cbfun = cbfun || function(){};
 }
 
 hoverDataMap.prototype.init = function(){
@@ -557,8 +574,8 @@ hoverDataMap.prototype.init = function(){
 //绘制tip元素
 hoverDataMap.prototype.drawTip = function(gd,x,y,Data){
     //矩形宽高
-    var rect_w = 300;
-    var rect_h = 150;
+    var rect_w = this._map.tip.width;
+    var rect_h = this._map.tip.height;
 
     //矩形位置
     var x = x;
@@ -566,8 +583,8 @@ hoverDataMap.prototype.drawTip = function(gd,x,y,Data){
 
 
     //矩形相对位置
-    var top = 0;
-    var left = 0;
+    var top = -rect_h/2;
+    var left = 60;
 
     var style = Data.style;
     var title = Data.title;
@@ -584,106 +601,121 @@ hoverDataMap.prototype.drawTip = function(gd,x,y,Data){
             tipbg = "#fdf0da";
             tippointbg = "#f13b3b";
             break;
-        case "table-tip-style1-small":
-            tipbg = "#beecfd";
-            tippointbg = "#7fd9fb";
-            rect_w = 300;
-            rect_h = 100;
-            top = 30;
+        
     };
 
-    if(x>(this.ox+this.w-rect_w)){  //鼠标移入到右边缘
-        x = x - 400;
-
-        gd.save();
-        gd.beginPath();
-        gd.fillStyle = '#EB852A';
-        gd.shadowOffsetX = 5; // 阴影Y轴偏移
-        gd.shadowOffsetY = 5; // 阴影X轴偏移
-        gd.shadowBlur = 14; // 模糊尺寸
-        gd.shadowColor = 'rgba(0, 0, 0, 0.2)'; // 颜色
-        gd.fillStyle=tipbg;
-
-        gd.roundRect(x,y+top,rect_w,rect_h,20).fill();
-
-        gd.moveTo(x+rect_w-3,y+40);
-        gd.lineTo(x+rect_w+20-3,y+40+40);
-        gd.lineTo(x+rect_w-3,y+40+80);
-        gd.fill();
-
-        gd.beginPath();
-        gd.fillStyle=tippointbg;
-        gd.strokeStyle="#fff";
-        gd.lineWidth = 3;
-        gd.arc(x+rect_w-3,y+77,8,0,2*Math.PI);
-        gd.fill();
-        gd.stroke();
-    }else{
-        x = x;
-
-        gd.save();
-        gd.beginPath();
-        gd.fillStyle = '#EB852A';
-        gd.shadowOffsetX = 5; // 阴影Y轴偏移
-        gd.shadowOffsetY = 5; // 阴影X轴偏移
-        gd.shadowBlur = 14; // 模糊尺寸
-        gd.shadowColor = 'rgba(0, 0, 0, 0.2)'; // 颜色
-        gd.fillStyle=tipbg;
-
-        gd.roundRect(x,y+top,rect_w,rect_h,20).fill();
-
-        gd.moveTo(x,y+40);
-        gd.lineTo(x-20,y+40+40);
-        gd.lineTo(x,y+40+80);
-        gd.fill();
-
-        gd.beginPath();
-        gd.fillStyle=tippointbg;
-        gd.strokeStyle="#fff";
-        gd.lineWidth = 3;
-        gd.arc(x,y+77,8,0,2*Math.PI);
-        gd.fill();
-        gd.stroke();
-    }
-
-
-
-
-
-
+    gd.save();
     gd.beginPath();
-    gd.fillStyle='#3c3c3c';
-    gd.font='26px a';
-    gd.textAlign='left';
-    gd.textBaseline='top';
-    gd.translate(0.5,0.5);
+    gd.fillStyle = '#EB852A';
+    gd.shadowOffsetX = 5; // 阴影Y轴偏移
+    gd.shadowOffsetY = 5; // 阴影X轴偏移
+    gd.shadowBlur = 14; // 模糊尺寸
+    gd.shadowColor = 'rgba(0, 0, 0, 0.2)'; // 颜色
+    gd.fillStyle=tipbg;
+    gd.textBaseline= 'middle';
 
 
-    if(data.length == 1){
-        gd.fillText(title,x+20,y+50);
-        gd.fillText(data[0],x+20,y+90);
+    if(x>(this.ox+this.w-rect_w)){  //鼠标移入到右边缘
+
+        gd.roundRect(x-rect_w-left,y+top,rect_w,rect_h,20).fill();
+
+        gd.moveTo(x-left,y-40);
+        gd.lineTo(x-left+20,y);
+        gd.lineTo(x-left,y+40);
+        gd.fill();
+
+        gd.beginPath();
+        gd.fillStyle=tippointbg;
+        gd.strokeStyle="#fff";
+        gd.lineWidth = 3;
+        gd.arc(x-left,y,8,0,2*Math.PI);
+        gd.fill();
         gd.stroke();
+
+
+        gd.beginPath();
+        gd.fillStyle='#3c3c3c';
+        gd.font='26px a';
+        gd.textAlign='left';
+        gd.translate(0.5,0.5);
+
+
+        if(data.length == 1){
+            gd.fillText(title,x-rect_w-left+20,y+top/2);
+            gd.fillText(data[0],x-rect_w-left+20,y-top/2);
+            gd.stroke();
+        }else{
+            gd.fillText(title,x-rect_w-left+20,y+top/2);
+            gd.fillText(data[0],x-rect_w-left+20,y);
+            gd.stroke();
+            gd.fillStyle='#f13b3b';
+            gd.fillText(data[1],x-rect_w-left+20,y-top/2);
+            gd.stroke();
+        }
+
+        gd.restore();
     }else{
-        gd.fillText(title,x+20,y+20);
-        gd.fillText(data[0],x+20,y+60);
+
+        gd.roundRect(x+left,y+top,rect_w,rect_h,20).fill();
+
+        gd.moveTo(x+left,y-40);
+        gd.lineTo(x+left-20,y);
+        gd.lineTo(x+left,y+40);
+        gd.fill();
+
+        gd.beginPath();
+        gd.fillStyle=tippointbg;
+        gd.strokeStyle="#fff";
+        gd.lineWidth = 3;
+        gd.arc(x+left,y,8,0,2*Math.PI);
+        gd.fill();
         gd.stroke();
-        gd.fillStyle='#f13b3b';
-        gd.fillText(data[1],x+20,y+100);
-        gd.stroke();
+
+
+        gd.beginPath();
+        gd.fillStyle='#3c3c3c';
+        gd.font='26px a';
+        gd.textAlign='left';
+
+        gd.translate(0.5,0.5);
+
+
+        if(data.length == 1){
+            gd.fillText(title,x+left+20,y+top/2);
+            gd.fillText(data[0],x+left+20,y-top/2);
+            gd.stroke();
+        }else{
+            gd.fillText(title,x+left+20,y);
+            gd.fillText(data[0],x+left+20,y+60);
+            gd.stroke();
+            gd.fillStyle='#f13b3b';
+            gd.fillText(data[1],x+left+20,y+100);
+            gd.stroke();
+        }
+
+        gd.restore();
     }
 
-    gd.restore();
+
+
+
+
+
+
 
 };
 //将选中的点加粗
 hoverDataMap.prototype.hoverPoint = function(gd,x,y,color){
     gd.save();
     gd.beginPath();
-    gd.fillStyle=color;
+    gd.fillStyle="#fff";
     //gd.moveTo(x,y);
     //gd.lineTo(x+1,y+1);
-    gd.arc(x,y,5,0,2*Math.PI);
+    gd.lineWidth = 4;
+    gd.strokeStyle=color;
+    gd.arc(x,y,6,0,2*Math.PI);
     gd.fill();
+    gd.stroke();
     gd.restore();
 };
 
@@ -700,6 +732,8 @@ hoverDataMap.prototype.drawDataPoint = function(gd,tx,ty,oImagebase){
     var unit = _m.tip.unit;
     var reg_x = new RegExp('\\'+unit+'x'+'\\'+unit,'g');
     var reg_y = new RegExp('\\'+unit+'y'+'\\'+unit,'g');
+
+    var cbFun = this.cbfun;  //将移入返回的信息执行返回的回调函数之中
 
     //console.log(reg_x,reg_y);
     //console.log(_m.text_y);
@@ -742,8 +776,8 @@ hoverDataMap.prototype.drawDataPoint = function(gd,tx,ty,oImagebase){
         //console.log(_m.text_y);
         //console.log(_m_tip_data[i],dd_d.x);
         if(dd_d && dd_d.v){
-            oTableTipData.title = _m.tip.title.replace(reg_x,_m.text_y[Math.round(dd_d.x)]).replace(reg_y,dd_d.v);
-            str = _m_tip_data[i].replace(reg_x,_m.text_y[Math.round(dd_d.x)]).replace(reg_y,dd_d.v);
+            oTableTipData.title = _m.tip.title.replace(reg_x,dd_d.v_x).replace(reg_y,dd_d.v);
+            str = _m_tip_data[i].replace(reg_x,dd_d.v_x).replace(reg_y,dd_d.v);
         }
         _oTableTipData_data.push(str);
 
@@ -753,8 +787,11 @@ hoverDataMap.prototype.drawDataPoint = function(gd,tx,ty,oImagebase){
 
     oTableTipData.data = _oTableTipData_data;
 
+    cbFun.call(this._cdm,dd_d);//实时执行回调,并且吧数据返回参数之中
+    
+
     if(_m.tip.show){
-        this.drawTip(gd,tx+50,ty-60,oTableTipData);
+        this.drawTip(gd,tx,ty,oTableTipData);
     }
 
 
@@ -769,8 +806,8 @@ hoverDataMap.prototype.mousemove = function(gd){
     gd.canvas.onmousemove = function(e){
         //根据假数据生成tip提示框
 
-        var l = (this.parentNode.getBoundingClientRect().left || this.parentNode.offsetLeft)+document.body.scrollLeft;
-        var t = (this.parentNode.getBoundingClientRect().top || this.parentNode.offsetTop)+document.body.scrollTop;
+        var l = (this.parentNode.getBoundingClientRect().left || this.parentNode.offsetLeft)+(document.body.scrollLeft || document.documentElement.scrollLeft);
+        var t = (this.parentNode.getBoundingClientRect().top || this.parentNode.offsetTop)+(document.body.scrollTop || document.documentElement.scrollTop);
 
         var tx = (e.pageX-l)*_this.MULTIPLE;
         var ty = (e.pageY-t)*_this.MULTIPLE;
@@ -836,15 +873,24 @@ function yunChar(obj,setting){
 
 
     for(var i=0,datal = dataset.length;i<datal;i++){
-        this.oCDM.drawDataMap(dataset[i].backgroundColor,dataset[i].data);
+        this.oCDM.drawDataMap(dataset[i].backgroundColor,dataset[i].data,(dataset[i].data_x || []));//穿一个值于横坐标值的对应关系
     }
     this.oCDM.starDraw(setting.animation);//配置好数据,开始画
+
+    //this.oCDM.hoverCbfun(this.hoverCbfun);
 
 
 };
 
 yunChar.prototype.getDataImage = function(){
     return this.oCDM.getDataImage();
+};
+
+yunChar.prototype.hoverCbfun = function(fun){
+    //console.log(fun());
+    //console.log(fun);
+    //this.oCDM.hoverCbfun(fun);//执行鼠标移入事件并且实时返回
+    this.oCDM.hoverCbfun(fun);
 }
 /**
  * Created by wuyang on 16/5/8.
@@ -1028,5 +1074,5 @@ var Tween = {
 Math.tween = Tween;
 
 /*
-* ch13版本
+* ch11版本
 * */

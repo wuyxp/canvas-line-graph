@@ -14,6 +14,8 @@
 * ch08(*time:2016-5-11*):调节tip框动态显示位置,并且调节显示x,y轴的比例问题.
 * ch09(*time:2016-5-11*):修改x轴和y轴最后一个数的bug,重新计算总体数据的比例bug,修改tip的大小.
 * ch10(*time:2016-5-12*):修改数据线的最大长度和x轴比例的最大长度不一致的bug,添加tip对显示信息的控制.
+* ch11(*time:2016-5-13*):添加鼠标在canvas移动时出现回调函数,并且返回所指向的对象关系.对api的修正,增加了对数据data——x轴的映射关系,添加对y轴的最大限制max属性,兼容火狐版本浏览器做的兼容
+
 
 >>>>下个版本将会把调整细节,集体搜集下来的bug 等...
 
@@ -28,7 +30,7 @@
         multiple : 2,  //canvas缩放程度,按照是否有retian屏幕兼容
 
         animation : false, //是否有动画效果
-
+        max : 2,
         axes : {    //坐标轴设置
 
             ox  :   40,
@@ -53,7 +55,8 @@
             {
                 backgroundColor : "#beecfd",
                 label : "同行线",
-                data : [...]
+                data : [...],
+                data_x : [...]
             },{
                 backgroundColor : "#ef8686",
                 label : "警报线",
@@ -62,12 +65,15 @@
         ],
 
         tip : {   //提示框的内容
-            show : false, //是否展示
-            style : "table-tip-style1",
-            title : "线说明",
-            data : ["同行线:","警报线:"],
-            unit : "M"
-        }
+                    show : true, //是否展示
+                    style : "table-tip-style1",
+                    width : 300,
+                    height: 100,
+                    unit : "$",
+                    title : "线说明$x$",
+                    vector : "right", //用于指向鼠标滑动到的单位
+                    data : ["2016.16.05-2016.16.06"]
+                }
     }`
 ***
 * 然后声明对象
@@ -78,3 +84,10 @@
 
     `var yc = new yunChar($("#canvas")[0],d);
      var src = yc.getDataImage();`
+
+* 在对象下面有个hoverCbfun函数可以实时监听鼠标移动变化.
+
+    `yc.hoverCbfun(function(e){
+        d.tip.title = (d.axes.x.data.indexOf(e.v_x) == 0 ? "" : d.axes.x.data[d.axes.x.data.indexOf(e.v_x)-1]) +"-"+e.v_x;
+         //console.log(e);
+     });`
