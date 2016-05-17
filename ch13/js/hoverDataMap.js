@@ -206,13 +206,11 @@ hoverDataMap.prototype.drawDataPoint = function(gd,tx,ty,oImagebase){
     var vector = _m.tip.vector;
 
     //console.log(_m_tip_data);
-
     for(var i=0,j=_m_tip_data.length;i<j;i++){
 
         var dd = gd.DataMap[i];
         var dd_d = {};
         //如果鼠标没有到下一个节点,那么就用上一个节点的数值
-        //console.log(dIndex,dd_d_l);
         while(dIndex > 0 && dIndex <= dd_d_l && !(dd_d = dd.d[~~dIndex])){
             if(vector == "left"){
                 dIndex--;

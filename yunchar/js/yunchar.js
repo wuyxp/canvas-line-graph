@@ -329,6 +329,8 @@ function createMap(json,gd,MULTIPLE){
     this.oy = json.oy * MULTIPLE;
     this.x = json.x;
     this.y = json.y;
+
+    this.xrotate = json.x.rotate || 0;
     
     this.tip; //坐标轴提示框的文字
 
@@ -415,30 +417,60 @@ createMap.prototype.drawScale = function(gd,x0,y0,x1,y1,data){
     var l = data.length;
 
 
+    if(!this.xrotate%360 || direction == "vertical"){
+        gd.save();
+        gd.beginPath();
+        gd.fillStyle='#3c3c3c';
+        gd.font='26px a';
+        gd.textAlign='right';
+        gd.textBaseline='top';
+        gd.translate(0.5,0.5);
 
-    gd.save()
-    gd.beginPath();
-    gd.fillStyle='#3c3c3c';
-    gd.font='26px a';
-    gd.textAlign='right';
-    gd.textBaseline='top';
-    gd.translate(0.5,0.5);
 
+        for(var i=0;i<l;i++){
+            if(direction == "vertical"){
+                var s = (y1-y0+100)/(l-1|| 0);
+                gd.fillText(data[i],x0-10,y0+s*i-20);
+            }else{
 
-    for(var i=0;i<l;i++){
-        if(direction == "vertical"){
-            var s = (y1-y0+100)/(l-1|| 0);
-            gd.fillText(data[i],x0-10,y0+s*i-20);
-        }else{
-            var s = (x1-x0-80)/(l -1 ||0);
-            gd.fillText(data[i],x0+s*i+20,y0+10);
+                gd.rotate(this.xrotate * Math.PI/180);
+                var s = (x1-x0-80)/(l -1 ||0);
+                gd.fillText(data[i],x0+s*i+20,y0+10);
+
+            }
 
         }
 
+        gd.stroke();
+        gd.restore();
+
+    }else{
+
+        for(var i=0;i<l;i++){
+
+            gd.save();
+            gd.beginPath();
+            gd.fillStyle='#3c3c3c';
+            gd.font='26px a';
+            gd.textAlign='right';
+            gd.textBaseline='top';
+
+            var s = (x1-x0-80)/(l -1 ||0);
+            var _w = gd.measureText(data[i]).width;
+            var _r = this.xrotate * Math.PI/180;
+            var _x = (x0+s*i)+_w*Math.cos(_r);
+            var _y = (y0)+_w*Math.sin(_r);
+
+            gd.translate(_x,_y);
+            gd.rotate(_r);
+            //gd.fillText(data[i],_w*Math.sin(_r),_w*Math.cos(_r));
+            gd.fillText(data[i],0,0);
+            gd.translate(-(_x),-_y);
+            gd.stroke();
+            gd.restore();
+        }
+
     }
-    
-    gd.stroke();
-    gd.restore();
 
 };
 
@@ -594,11 +626,11 @@ hoverDataMap.prototype.drawTip = function(gd,x,y,Data){
 
     switch  (style){
         case "table-tip-style1":
-            tipbg = "#beecfd";
+            tipbg = "rgba(190,236,253,.5)";
             tippointbg = "#7fd9fb";
             break;
         case "table-tip-style2":
-            tipbg = "#fdf0da";
+            tipbg = "rgba(253,240,218,.5)";
             tippointbg = "#f13b3b";
             break;
         
@@ -619,16 +651,16 @@ hoverDataMap.prototype.drawTip = function(gd,x,y,Data){
 
         gd.roundRect(x-rect_w-left,y+top,rect_w,rect_h,20).fill();
 
-        gd.moveTo(x-left,y-40);
-        gd.lineTo(x-left+20,y);
-        gd.lineTo(x-left,y+40);
+        gd.moveTo(x-left-5,y-30);
+        gd.lineTo(x-left-5+20,y);
+        gd.lineTo(x-left-5,y+30);
         gd.fill();
 
         gd.beginPath();
         gd.fillStyle=tippointbg;
         gd.strokeStyle="#fff";
         gd.lineWidth = 3;
-        gd.arc(x-left,y,8,0,2*Math.PI);
+        gd.arc(x-left-5,y,8,0,2*Math.PI);
         gd.fill();
         gd.stroke();
 
@@ -658,16 +690,16 @@ hoverDataMap.prototype.drawTip = function(gd,x,y,Data){
 
         gd.roundRect(x+left,y+top,rect_w,rect_h,20).fill();
 
-        gd.moveTo(x+left,y-40);
-        gd.lineTo(x+left-20,y);
-        gd.lineTo(x+left,y+40);
+        gd.moveTo(x+left+5,y-30);
+        gd.lineTo(x+left+5-20,y);
+        gd.lineTo(x+left+5,y+30);
         gd.fill();
 
         gd.beginPath();
         gd.fillStyle=tippointbg;
         gd.strokeStyle="#fff";
         gd.lineWidth = 3;
-        gd.arc(x+left,y,8,0,2*Math.PI);
+        gd.arc(x+left+5,y,8,0,2*Math.PI);
         gd.fill();
         gd.stroke();
 
@@ -685,11 +717,11 @@ hoverDataMap.prototype.drawTip = function(gd,x,y,Data){
             gd.fillText(data[0],x+left+20,y-top/2);
             gd.stroke();
         }else{
-            gd.fillText(title,x+left+20,y);
-            gd.fillText(data[0],x+left+20,y+60);
+            gd.fillText(title,x+left+20,y+top/2);
+            gd.fillText(data[0],x+left+20,y);
             gd.stroke();
             gd.fillStyle='#f13b3b';
-            gd.fillText(data[1],x+left+20,y+100);
+            gd.fillText(data[1],x+left+20,y-top/2);
             gd.stroke();
         }
 
@@ -752,13 +784,13 @@ hoverDataMap.prototype.drawDataPoint = function(gd,tx,ty,oImagebase){
 
     var vector = _m.tip.vector;
 
+    //console.log(_m_tip_data);
     for(var i=0,j=_m_tip_data.length;i<j;i++){
 
         var dd = gd.DataMap[i];
         var dd_d = {};
         //如果鼠标没有到下一个节点,那么就用上一个节点的数值
-        //console.log(dIndex,dd_d_l);
-        while(dIndex > 0 && dIndex <= dd_d_l && !(dd_d = dd.d[dIndex])){
+        while(dIndex > 0 && dIndex <= dd_d_l && !(dd_d = dd.d[~~dIndex])){
             if(vector == "left"){
                 dIndex--;
             }else{

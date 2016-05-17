@@ -1,0 +1,84 @@
+.canvas{
+    width:350px;
+    height:250px;
+    border:1px solid;
+    float:left;
+    position: relative;
+    margin: 15px;
+    cursor:pointer;
+}
+
+canvas{
+
+}
+
+/*
+隐藏
+*/
+#mask {
+    width:100%;
+    height: 100%;
+    position:fixed;
+    top:0;
+    left:0;
+    background: rgba(1,1,1,.4);
+    z-index:2;
+    display: none;
+}
+#cv {
+    width:800px;
+    height:600px;
+    position:fixed;
+    top:0%;
+    left:50%;
+    z-index: 3;
+    background: #fff;
+    margin-top: 30px;
+    margin-left: -400px;
+    display: none;
+
+}
+#cv img{
+    width:300px;
+    height:200px;
+    position: absolute;
+    bottom:20px;
+}
+#img1{
+    left:60px;
+}
+#img2{
+    left:450px
+}
+#close{
+    width:30px;
+    height:30px;
+    display: block;
+    position: absolute;
+    right: 0;
+    top:-30px;
+    text-align: center;
+    line-height: 30px;
+    background: #cccccc;
+}
+
+#close:hover{
+    background: #fdf0da;
+    color: #7fd9fb;
+}
+#canvas{
+    width:800px;
+    height:480px;
+    position: absolute;
+    top:0;
+    left: 0;
+}
+
+
+
+
+
+
+
+
+
