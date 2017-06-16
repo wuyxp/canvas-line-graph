@@ -1,6 +1,6 @@
 # 线性数据图表展示(canvas)
 >原生制作折线图表代码控制,来自新公司的一个项目,坚决不能烂尾.
-
+<a href="wuyang.name">wuyang.name</a>
 ![alt](http://a.hiphotos.baidu.com/baike/c0%3Dbaike80%2C5%2C5%2C80%2C26/sign=77ccbdbdd300baa1ae214fe92679d277/63d0f703918fa0ece00b145c249759ee3c6ddb97.jpg "感谢优秀的canvas")
 
 #####各个版本的代码级控制
