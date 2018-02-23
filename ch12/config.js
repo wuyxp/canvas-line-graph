@@ -6,7 +6,7 @@ var _c = [];
 
 for(var i=0;i<12;i++){
 
-    var random_arr = [.1,.2,.3,.4,.5,.6,.7,.8,.9,1,null,null,null,null,null,null,null,null,null,null];
+    var random_arr = [.1,.2,.3,.4,.5,.6,.7,.8,.9,1,null,null,null,null];
     var _arr = [];
     for(var j=0;j<13;j++){
         _arr.push(random_arr[(Math.random()*(random_arr.length-1)).toFixed(0)]);
